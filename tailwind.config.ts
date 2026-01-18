@@ -1,0 +1,21 @@
+// tailwind.config.ts
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  darkMode: ["class", ".dark"],
+
+  content: [
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/lib/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/styles/**/*.{css}"
+  ],
+
+  theme: {
+    extend: {}
+  },
+
+  plugins: []
+};
+
+export default config;
