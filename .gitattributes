@@ -1,0 +1,6 @@
+# Forzar LF en repos (ideal para Vercel/Linux)
+* text=auto eol=lf
+
+# Windows scripts (si algún día los usas)
+*.bat text eol=crlf
+*.cmd text eol=crlf
