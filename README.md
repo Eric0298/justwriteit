@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JustWriteIt 🎙️✍️  
+### Propuesta de proyecto
 
-## Getting Started
+**JustWriteIt** es una propuesta de aplicación web cuyo objetivo es permitir a los usuarios **transcribir audios a texto de forma sencilla**, ya sea subiendo un archivo de audio o grabando la voz en tiempo real.
+---
 
-First, run the development server:
+## Objetivo
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Desarrollar una aplicación web moderna que permita:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Convertir audio en texto de manera intuitiva  
+- Gestionar transcripciones de forma privada por usuario  
+- Aplicar buenas prácticas actuales de desarrollo web  
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+##  Idea general
 
-## Learn More
+La aplicación contará con:
 
-To learn more about Next.js, take a look at the following resources:
+- Registro y acceso de usuarios
+- Un panel privado (dashboard) con navegación fija
+- Transcripción de audio:
+  - Desde archivos de audio
+  - En tiempo real
+- Historial de audios transcritos por cada usuario
+- Modo claro y modo oscuro
+- Diseño adaptable a móviles y accesible
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+##  Tecnologías previstas
 
-## Deploy on Vercel
+- Next.js
+- TypeScript
+- Base de datos para almacenar usuarios y transcripciones
+- Despliegue en la nube
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+##  Autor
+
+**Eric Mancebo Muminhodzic**  
+Proyecto académico de desarrollo web -**Entorno-Cliente** 2DAW semipresencial
