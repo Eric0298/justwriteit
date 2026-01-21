@@ -1,43 +1,52 @@
 import * as React from "react";
 import { cn } from "@/lib/cn";
 
-export type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
+export type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
   label?: string;
   hint?: string;
   error?: string;
 };
 
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, id, label, hint, error, ...props }, ref) => {
+export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
+  ({ className, id, label, hint, error, children, ...props }, ref) => {
     const autoId = React.useId();
-    const inputId = id ?? autoId;
+    const selectId = id ?? autoId;
 
-    const hintId = hint ? `${inputId}-hint` : undefined;
-    const errorId = error ? `${inputId}-error` : undefined;
-
-    // aria-describedby puede apuntar a hint y/o error
+    const hintId = hint ? `${selectId}-hint` : undefined;
+    const errorId = error ? `${selectId}-error` : undefined;
     const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
 
     return (
       <div className="grid gap-2">
         {label ? (
-          <label className="label" htmlFor={inputId}>
+          <label className="label" htmlFor={selectId}>
             {label}
           </label>
         ) : null}
 
-        <input
+        <select
           ref={ref}
-          id={inputId}
+          id={selectId}
           className={cn(
-            "input",
+            "input pr-10",
+            "appearance-none",
             error && "border-danger/70 focus:border-danger",
             className
           )}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           {...props}
-        />
+        >
+          {children}
+        </select>
+
+        {/* flecha visual (solo decorativa) */}
+        <span
+          className="pointer-events-none -mt-9 ml-auto mr-3 h-4 w-4 text-muted"
+          aria-hidden="true"
+        >
+          ▼
+        </span>
 
         {hint ? (
           <p id={hintId} className="hint">
@@ -55,4 +64,4 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   }
 );
 
-Input.displayName = "Input";
+Select.displayName = "Select";
