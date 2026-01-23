@@ -14,8 +14,6 @@ function getDatabaseUrl(): string {
   return url;
 }
 
-// Tipos “seguros” para parámetros de SQL en Postgres.
-// Si más adelante necesitas JSON u otros tipos, lo ampliamos.
 export type DbValue =
   | string
   | number
