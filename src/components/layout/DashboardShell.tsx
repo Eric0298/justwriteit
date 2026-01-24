@@ -1,8 +1,16 @@
 import * as React from "react";
 import Link from "next/link";
 import { DashboardNav } from "@/components/layout/DashboardNav";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import type { Theme } from "@/lib/theme";
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+export function DashboardShell({
+  children,
+  initialTheme,
+}: {
+  children: React.ReactNode;
+  initialTheme: Theme;
+}) {
   return (
     <div className="min-h-screen">
       {/* Header móvil */}
@@ -11,12 +19,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <Link href="/dashboard" className="font-semibold tracking-tight">
             JustWriteIt
           </Link>
-          <Link
-            href="/"
-            className="text-sm text-muted hover:underline underline-offset-4"
-          >
-            Volver a landing
-          </Link>
+
+          <div className="flex items-center gap-2">
+            <ThemeToggle initialTheme={initialTheme} />
+            <Link
+              href="/"
+              className="text-sm text-muted hover:underline underline-offset-4"
+            >
+              Volver a landing
+            </Link>
+          </div>
         </div>
       </header>
 
