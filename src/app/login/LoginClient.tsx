@@ -12,7 +12,7 @@ export default function LoginClient({ registered }: { registered: boolean }) {
   React.useEffect(() => {
     if (registered) {
       push({
-        title: "Cuenta creada ",
+        title: "Cuenta creada ✅",
         message: "Ya puedes iniciar sesión.",
         variant: "success",
         durationMs: 3500,
@@ -34,7 +34,6 @@ export default function LoginClient({ registered }: { registered: boolean }) {
             type="password"
             autoComplete="current-password"
           />
-
           <Button type="submit">Entrar</Button>
         </form>
 

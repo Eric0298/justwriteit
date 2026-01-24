@@ -5,9 +5,11 @@ export type UserRow = {
   name: string;
   email: string;
   password_hash: string;
-  created_at: string;
-  verified_at: string | null;
+  created_at: Date;
+  verified_at: Date | null;
 };
+
+export type PublicUser = Omit<UserRow, "password_hash">;
 
 export async function createUser(input: {
   name: string;
@@ -15,6 +17,7 @@ export async function createUser(input: {
   passwordHash: string;
 }): Promise<UserRow> {
   const email = input.email.trim().toLowerCase();
+  const name = input.name.trim();
 
   const res = await query<UserRow>(
     `
@@ -22,10 +25,15 @@ export async function createUser(input: {
     VALUES ($1, $2, $3)
     RETURNING id, name, email, password_hash, created_at, verified_at
     `,
-    [input.name.trim(), email, input.passwordHash]
+    [name, email, input.passwordHash]
   );
 
-  return res.rows[0];
+  const row = res.rows[0];
+  if (!row) {
+    throw new Error("No se pudo crear el usuario (sin fila de retorno).");
+  }
+
+  return row;
 }
 
 export async function getUserByEmail(email: string): Promise<UserRow | null> {
