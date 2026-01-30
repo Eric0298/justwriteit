@@ -1,62 +1,64 @@
+// src/components/ui/Select.tsx
+"use client";
+
 import * as React from "react";
 import { cn } from "@/lib/cn";
 
-export type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
+export type SelectOption = {
+  value: string;
+  label: string;
+  disabled?: boolean;
+};
+
+type SelectProps = Omit<
+  React.SelectHTMLAttributes<HTMLSelectElement>,
+  "children"
+> & {
   label?: string;
   hint?: string;
   error?: string;
+  options: SelectOption[];
 };
 
 export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, id, label, hint, error, children, ...props }, ref) => {
+  ({ className, label, hint, error, id, options, ...props }, ref) => {
     const autoId = React.useId();
     const selectId = id ?? autoId;
 
     const hintId = hint ? `${selectId}-hint` : undefined;
     const errorId = error ? `${selectId}-error` : undefined;
-    const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
+    const describedBy = [errorId, hintId].filter(Boolean).join(" ") || undefined;
 
     return (
       <div className="grid gap-2">
         {label ? (
-          <label className="label" htmlFor={selectId}>
+          <label htmlFor={selectId} className="label">
             {label}
           </label>
         ) : null}
 
         <select
-          ref={ref}
           id={selectId}
-          className={cn(
-            "input pr-10",
-            "appearance-none",
-            error && "border-danger/70 focus:border-danger",
-            className
-          )}
-          aria-invalid={error ? true : undefined}
+          ref={ref}
+          className={cn("input", className)}
+          aria-invalid={Boolean(error) || undefined}
           aria-describedby={describedBy}
           {...props}
         >
-          {children}
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value} disabled={opt.disabled}>
+              {opt.label}
+            </option>
+          ))}
         </select>
 
-        {/* flecha visual (solo decorativa) */}
-        <span
-          className="pointer-events-none -mt-9 ml-auto mr-3 h-4 w-4 text-muted"
-          aria-hidden="true"
-        >
-          ▼
-        </span>
-
-        {hint ? (
+        {error ? (
+          <p id={errorId} className="text-xs" style={{ color: "rgb(var(--danger))" }}>
+            {error}
+          </p>
+        ) : hint ? (
           <p id={hintId} className="hint">
             {hint}
-          </p>
-        ) : null}
-
-        {error ? (
-          <p id={errorId} className="text-xs text-danger">
-            {error}
           </p>
         ) : null}
       </div>
