@@ -12,12 +12,12 @@ export default function SettingsPage() {
       <form className="mt-6 grid max-w-lg gap-4">
         <label className="grid gap-2">
           <span className="label">Nombre</span>
-          <Input placeholder="Elu" />
+          <Input placeholder="Eric" />
         </label>
 
         <label className="grid gap-2">
           <span className="label">Email</span>
-          <Input type="email" placeholder="elu@justwriteit.com" />
+          <Input type="email" placeholder="ejemplo@justwriteit.com" />
         </label>
 
         <div className="flex gap-3">

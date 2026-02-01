@@ -1,3 +1,8 @@
+export type TranscriptionAdapterOutput = {
+  text: string;
+  durationSec?: number;
+};
+
 export type TranscriptionAdapterInput = {
   fileBuffer: Buffer;
   filename: string;
@@ -6,13 +11,16 @@ export type TranscriptionAdapterInput = {
   context?: string;
 };
 
-export type TranscriptionAdapterOutput = {
-  text: string;
-  durationSec?: number;
+export type LiveTranscriptionAdapterInput = {
+  audioBuffer: Buffer;
+  mimeType: string;
+  language: string;
+  context?: string;
 };
 
 export interface TranscriptionAdapter {
   transcribeFile(input: TranscriptionAdapterInput): Promise<TranscriptionAdapterOutput>;
+  transcribeLive(input: LiveTranscriptionAdapterInput): Promise<TranscriptionAdapterOutput>;
 }
 
 export class MockTranscriptionAdapter implements TranscriptionAdapter {
@@ -21,7 +29,7 @@ export class MockTranscriptionAdapter implements TranscriptionAdapter {
 
     return {
       text:
-        ` (MOCK) Transcripción simulada\n` +
+        `✅ (MOCK) Transcripción simulada (archivo)\n` +
         `Archivo: ${input.filename} (${kb} KB)\n` +
         `Tipo: ${input.mimeType}\n` +
         `Idioma: ${input.language}\n` +
@@ -30,9 +38,23 @@ export class MockTranscriptionAdapter implements TranscriptionAdapter {
       durationSec: 42,
     };
   }
+
+  async transcribeLive(input: LiveTranscriptionAdapterInput): Promise<TranscriptionAdapterOutput> {
+    const kb = Math.round(input.audioBuffer.length / 1024);
+
+    return {
+      text:
+        `🎙️ (MOCK) Transcripción simulada (en vivo)\n` +
+        `Audio total recibido: ${kb} KB\n` +
+        `Tipo: ${input.mimeType}\n` +
+        `Idioma: ${input.language}\n` +
+        `Contexto: ${input.context ?? "—"}\n\n` +
+        `Aquí irá la transcripción real cuando conectemos un proveedor streaming.`,
+      durationSec: 18,
+    };
+  }
 }
 
 export function getTranscriptionAdapter(): TranscriptionAdapter {
-  // En PRO: aquí se cambiara por Whisper / Deepgram / AssemblyAI, etc.
   return new MockTranscriptionAdapter();
 }
