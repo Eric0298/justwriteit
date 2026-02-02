@@ -3,6 +3,8 @@ import { query } from "@/lib/db";
 export type TranscriptionType = "file" | "live";
 export type TranscriptionStatus = "pending" | "processing" | "done" | "failed";
 
+export type NotificationStatus = "none" | "pending" | "sent" | "failed";
+
 export type TranscriptionRow = {
   id: string;
   user_id: string;
@@ -13,9 +15,16 @@ export type TranscriptionRow = {
   duration: number | null;
   transcript_text: string | null;
   created_at: string;
-  notification_status?: "pending" | "sent" | "failed";
-notification_error?: string | null;
+
+  notification_status: NotificationStatus;
+  notification_error: string | null;
 };
+
+const SELECT_COLUMNS = `
+  id, user_id, type, language, status,
+  audio_filename, duration, transcript_text, created_at,
+  notification_status, notification_error
+`;
 
 export async function createTranscription(input: {
   userId: string;
@@ -32,8 +41,7 @@ export async function createTranscription(input: {
       user_id, type, language, status, audio_filename, duration, transcript_text
     )
     VALUES ($1, $2, $3, $4, $5, $6, $7)
-    RETURNING
-      id, user_id, type, language, status, audio_filename, duration, transcript_text, created_at
+    RETURNING ${SELECT_COLUMNS}
     `,
     [
       input.userId,
@@ -59,8 +67,7 @@ export async function updateTranscriptionStatus(input: {
     UPDATE transcriptions
     SET status = $1
     WHERE id = $2 AND user_id = $3
-    RETURNING
-      id, user_id, type, language, status, audio_filename, duration, transcript_text, created_at
+    RETURNING ${SELECT_COLUMNS}
     `,
     [input.status, input.id, input.userId]
   );
@@ -83,8 +90,7 @@ export async function setTranscriptText(input: {
         audio_filename = COALESCE($3, audio_filename),
         status = 'done'
     WHERE id = $4 AND user_id = $5
-    RETURNING
-      id, user_id, type, language, status, audio_filename, duration, transcript_text, created_at
+    RETURNING ${SELECT_COLUMNS}
     `,
     [
       input.transcriptText,
@@ -98,6 +104,26 @@ export async function setTranscriptText(input: {
   return res.rows[0] ?? null;
 }
 
+export async function setNotificationStatus(input: {
+  id: string;
+  userId: string;
+  status: Exclude<NotificationStatus, "none">; // no tiene sentido setear "none" aquí
+  error?: string | null;
+}): Promise<TranscriptionRow | null> {
+  const res = await query<TranscriptionRow>(
+    `
+    UPDATE transcriptions
+    SET notification_status = $1,
+        notification_error = $2
+    WHERE id = $3 AND user_id = $4
+    RETURNING ${SELECT_COLUMNS}
+    `,
+    [input.status, input.error ?? null, input.id, input.userId]
+  );
+
+  return res.rows[0] ?? null;
+}
+
 export async function listUserTranscriptions(input: {
   userId: string;
   limit?: number;
@@ -105,8 +131,7 @@ export async function listUserTranscriptions(input: {
 }): Promise<TranscriptionRow[]> {
   const res = await query<TranscriptionRow>(
     `
-    SELECT
-      id, user_id, type, language, status, audio_filename, duration, transcript_text, created_at
+    SELECT ${SELECT_COLUMNS}
     FROM transcriptions
     WHERE user_id = $1
     ORDER BY created_at DESC
@@ -124,8 +149,7 @@ export async function getUserTranscriptionById(input: {
 }): Promise<TranscriptionRow | null> {
   const res = await query<TranscriptionRow>(
     `
-    SELECT
-      id, user_id, type, language, status, audio_filename, duration, transcript_text, created_at
+    SELECT ${SELECT_COLUMNS}
     FROM transcriptions
     WHERE user_id = $1 AND id = $2
     LIMIT 1
@@ -137,7 +161,7 @@ export async function getUserTranscriptionById(input: {
 }
 
 /**
- * Búsqueda full-text básica (usa el índice GIN que creamos)
+ * Búsqueda full-text básica (usa el índice GIN)
  * queryText: texto que el usuario busca dentro de transcript_text
  */
 export async function searchUserTranscriptions(input: {
@@ -147,8 +171,7 @@ export async function searchUserTranscriptions(input: {
 }): Promise<TranscriptionRow[]> {
   const res = await query<TranscriptionRow>(
     `
-    SELECT
-      id, user_id, type, language, status, audio_filename, duration, transcript_text, created_at
+    SELECT ${SELECT_COLUMNS}
     FROM transcriptions
     WHERE user_id = $1
       AND to_tsvector('simple', coalesce(transcript_text, ''))
@@ -160,26 +183,4 @@ export async function searchUserTranscriptions(input: {
   );
 
   return res.rows;
-}
-export type NotificationStatus = "pending" | "sent" | "failed";
-
-export async function setNotificationStatus(input: {
-  id: string;
-  userId: string;
-  status: NotificationStatus;
-  error?: string | null;
-}): Promise<TranscriptionRow | null> {
-  const res = await query<TranscriptionRow>(
-    `
-    UPDATE transcriptions
-    SET notification_status = $1,
-        notification_error = $2
-    WHERE id = $3 AND user_id = $4
-    RETURNING
-      id, user_id, type, language, status, audio_filename, duration, transcript_text, created_at
-    `,
-    [input.status, input.error ?? null, input.id, input.userId]
-  );
-
-  return res.rows[0] ?? null;
 }
