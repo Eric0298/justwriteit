@@ -6,7 +6,10 @@ import {
   createTranscription,
   setTranscriptText,
   updateTranscriptionStatus,
+  setNotificationStatus,
 } from "@/lib/queries/transcriptions";
+import { getUserById } from "@/lib/queries/users";
+import { notifyTranscriptionCompleted } from "@/lib/n8n";
 
 export const runtime = "nodejs";
 
@@ -52,13 +55,20 @@ export async function POST(req: Request) {
   }
 
   if (file.size > MAX_BYTES) {
-    return Response.json({ ok: false, error: "Archivo demasiado grande (máx 25MB)." }, { status: 413 });
+    return Response.json(
+      { ok: false, error: "Archivo demasiado grande (máx 25MB)." },
+      { status: 413 }
+    );
   }
 
   if (file.type && !ALLOWED_MIME.has(file.type)) {
-    return Response.json({ ok: false, error: `Tipo no permitido: ${file.type}` }, { status: 415 });
+    return Response.json(
+      { ok: false, error: `Tipo no permitido: ${file.type}` },
+      { status: 415 }
+    );
   }
 
+  // 1) Creamos registro "processing"
   const row = await createTranscription({
     userId: session.user.id,
     type: "file",
@@ -68,6 +78,7 @@ export async function POST(req: Request) {
   });
 
   try {
+    // 2) Ejecutamos transcripción con adapter
     const buffer = Buffer.from(await file.arrayBuffer());
 
     const adapter = getTranscriptionAdapter();
@@ -79,6 +90,7 @@ export async function POST(req: Request) {
       context: parsed.data.context || undefined,
     });
 
+    // 3) Guardamos resultado en BD (done)
     const saved = await setTranscriptText({
       id: row.id,
       userId: session.user.id,
@@ -87,8 +99,42 @@ export async function POST(req: Request) {
       audioFilename: file.name,
     });
 
+    // 4) 🔔 Notificación a n8n (NO bloqueante)
+    //    - Si falla, no rompe.
+    //    - Guardamos notification_status = sent/failed
+    try {
+      const user = await getUserById(session.user.id);
+      if (user && saved) {
+        const baseUrl = process.env.APP_URL ?? "http://localhost:3000";
+
+        const notifyRes = await notifyTranscriptionCompleted({
+          transcriptionId: saved.id,
+          userEmail: user.email,
+          userName: user.name,
+          language: saved.language,
+          type: saved.type,
+          createdAt: new Date(saved.created_at).toISOString(),
+          textSnippet: (out.text ?? "").slice(0, 300),
+          detailUrl: `${baseUrl}/dashboard/history/${saved.id}`,
+        });
+
+        await setNotificationStatus({
+          id: saved.id,
+          userId: session.user.id,
+          status: notifyRes.ok ? "sent" : "failed",
+          error: notifyRes.ok ? null : notifyRes.error ?? "n8n error",
+        });
+      }
+    } catch (err) {
+      console.error("n8n notify failed (ignored):", err);
+
+      // Si incluso falla el setNotificationStatus, lo ignoramos también.
+      // La transcripción ya está guardada y en done.
+    }
+
     return Response.json({ ok: true, transcription: saved });
   } catch (e) {
+    // 5) Si la transcripción falla, marcamos failed
     await updateTranscriptionStatus({
       id: row.id,
       userId: session.user.id,

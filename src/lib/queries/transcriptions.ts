@@ -13,6 +13,8 @@ export type TranscriptionRow = {
   duration: number | null;
   transcript_text: string | null;
   created_at: string;
+  notification_status?: "pending" | "sent" | "failed";
+notification_error?: string | null;
 };
 
 export async function createTranscription(input: {
@@ -158,4 +160,26 @@ export async function searchUserTranscriptions(input: {
   );
 
   return res.rows;
+}
+export type NotificationStatus = "pending" | "sent" | "failed";
+
+export async function setNotificationStatus(input: {
+  id: string;
+  userId: string;
+  status: NotificationStatus;
+  error?: string | null;
+}): Promise<TranscriptionRow | null> {
+  const res = await query<TranscriptionRow>(
+    `
+    UPDATE transcriptions
+    SET notification_status = $1,
+        notification_error = $2
+    WHERE id = $3 AND user_id = $4
+    RETURNING
+      id, user_id, type, language, status, audio_filename, duration, transcript_text, created_at
+    `,
+    [input.status, input.error ?? null, input.id, input.userId]
+  );
+
+  return res.rows[0] ?? null;
 }
