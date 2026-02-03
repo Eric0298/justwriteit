@@ -1,11 +1,22 @@
-// src/app/dashboard/layout.tsx
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { THEME_COOKIE, normalizeTheme, type Theme } from "@/lib/theme";
 
 export const metadata: Metadata = {
-  title: "Dashboard · JustWriteIt",
+  title: "Dashboard",
+  description: "Área privada de JustWriteIt.",
+  robots: { index: false, follow: false },
+  alternates: { canonical: "/dashboard" },
+  openGraph: {
+    title: "Dashboard · JustWriteIt",
+    description: "Área privada de JustWriteIt.",
+    url: "/dashboard",
+  },
+  twitter: {
+    title: "Dashboard · JustWriteIt",
+    description: "Área privada de JustWriteIt.",
+  },
 };
 
 export default async function DashboardLayout({

@@ -11,7 +11,7 @@ export async function loginAction(
   _prev: LoginFormState,
   formData: FormData
 ): Promise<LoginFormState> {
-  const email = String(formData.get("email") ?? "");
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
 
   try {

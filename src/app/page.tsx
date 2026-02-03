@@ -1,5 +1,24 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+
+export const metadata: Metadata = {
+  title: "Landing",
+  description:
+    "Transcribe archivos o voz en vivo y guarda todo en tu historial. JustWriteIt: rápido, simple y listo para crecer.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "JustWriteIt",
+    description:
+      "Transcribe archivos o voz en vivo y guarda todo en tu historial. Rápido, simple y listo para crecer.",
+    url: "/",
+  },
+  twitter: {
+    title: "JustWriteIt",
+    description:
+      "Transcribe archivos o voz en vivo y guarda todo en tu historial. Rápido, simple y listo para crecer.",
+  },
+};
 
 export default function LandingPage() {
   return (

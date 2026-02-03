@@ -1,64 +1,72 @@
+// src/app/register/actions.ts
 "use server";
 
-import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
+import bcrypt from "bcryptjs";
 import { registerSchema } from "@/lib/validators/auth";
 import { createUser } from "@/lib/queries/users";
 
 export type RegisterFormState = {
   ok: boolean;
-  fieldErrors?: Partial<Record<"name" | "email" | "password", string>>;
   formError?: string;
+  fieldErrors?: Partial<Record<"name" | "email" | "password", string>>;
 };
 
-const BCRYPT_ROUNDS = 12;
-
-function isUniqueViolation(err: unknown): boolean {
-  return typeof err === "object" && err !== null && (err as { code?: string }).code === "23505";
+function getBcryptRounds() {
+  const raw = process.env.BCRYPT_ROUNDS ?? "12";
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 10 && n <= 14 ? n : 12;
 }
 
 export async function registerAction(
   _prevState: RegisterFormState,
   formData: FormData
 ): Promise<RegisterFormState> {
-  const raw = {
+  const input = {
     name: String(formData.get("name") ?? ""),
     email: String(formData.get("email") ?? ""),
     password: String(formData.get("password") ?? ""),
   };
 
-  const parsed = registerSchema.safeParse(raw);
+  const parsed = registerSchema.safeParse(input);
   if (!parsed.success) {
-    const fieldErrors: RegisterFormState["fieldErrors"] = {};
-    const flattened = parsed.error.flatten().fieldErrors;
-
-    if (flattened.name?.[0]) fieldErrors.name = flattened.name[0];
-    if (flattened.email?.[0]) fieldErrors.email = flattened.email[0];
-    if (flattened.password?.[0]) fieldErrors.password = flattened.password[0];
-
-    return { ok: false, fieldErrors, formError: "Revisa los campos del formulario." };
+    const fe = parsed.error.flatten().fieldErrors;
+    return {
+      ok: false,
+      formError: "Revisa los campos del formulario.",
+      fieldErrors: {
+        name: fe.name?.[0],
+        email: fe.email?.[0],
+        password: fe.password?.[0],
+      },
+    };
   }
 
-  const { name, email, password } = parsed.data;
-
   try {
-    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    const rounds = getBcryptRounds();
+    const passwordHash = await bcrypt.hash(parsed.data.password, rounds);
 
-    await createUser({ name, email, passwordHash });
+    await createUser({
+      name: parsed.data.name,
+      email: parsed.data.email,
+      passwordHash,
+    });
 
     redirect("/login?registered=1");
-  } catch (err) {
-    if (isUniqueViolation(err)) {
+  } catch (err: unknown) {
+    // Postgres duplicate email: 23505
+    const anyErr = err as { code?: string; message?: string };
+    if (anyErr?.code === "23505") {
       return {
         ok: false,
-        fieldErrors: { email: "Este email ya está registrado." },
-        formError: "No se pudo crear la cuenta.",
+        formError: "Ese email ya está registrado.",
+        fieldErrors: { email: "Ya existe una cuenta con ese email." },
       };
     }
 
     return {
       ok: false,
-      formError: "Error inesperado. Inténtalo de nuevo.",
+      formError: anyErr?.message ?? "No se pudo crear la cuenta.",
     };
   }
 }
