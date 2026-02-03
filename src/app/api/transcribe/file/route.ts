@@ -1,4 +1,3 @@
-// src/app/api/transcribe/file/route.ts
 import { auth } from "@/../auth";
 import { transcribeFileSchema } from "@/lib/validators/transcribe";
 import { getTranscriptionAdapter } from "@/lib/transcription/adapter";
@@ -10,10 +9,13 @@ import {
 } from "@/lib/queries/transcriptions";
 import { getUserById } from "@/lib/queries/users";
 import { notifyTranscriptionCompleted } from "@/lib/n8n";
+import { parseBuffer } from "music-metadata";
 
 export const runtime = "nodejs";
 
 const MAX_BYTES = 25 * 1024 * 1024; // 25MB
+const MAX_DURATION_SEC = 30 * 60; // 30 min
+
 const ALLOWED_MIME = new Set([
   "audio/mpeg",
   "audio/mp3",
@@ -25,6 +27,35 @@ const ALLOWED_MIME = new Set([
   "audio/x-m4a",
   "audio/aac",
 ]);
+
+function normalizeMime(fileType: string) {
+  // algunos navegadores mandan "audio/mp3" o "audio/mpeg"
+  const t = (fileType || "").toLowerCase().trim();
+  if (t === "audio/mp3") return "audio/mpeg";
+  return t;
+}
+
+async function getDurationSecondsSafe(input: {
+  buffer: Buffer;
+  mimeType: string;
+  filename: string;
+}): Promise<number | null> {
+  try {
+    // music-metadata funciona mejor si le pasas el mimeType cuando lo tienes
+    const meta = await parseBuffer(input.buffer, input.mimeType || undefined, {
+      duration: true,
+    });
+
+    const d = meta.format.duration;
+    if (!d || !Number.isFinite(d) || d <= 0) return null;
+
+    return Math.round(d);
+  } catch (err) {
+    // No rompemos por no poder detectar duración
+    console.warn("No se pudo detectar duración:", input.filename, err);
+    return null;
+  }
+}
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -61,7 +92,8 @@ export async function POST(req: Request) {
     );
   }
 
-  if (file.type && !ALLOWED_MIME.has(file.type)) {
+  const mime = normalizeMime(file.type);
+  if (mime && !ALLOWED_MIME.has(mime)) {
     return Response.json(
       { ok: false, error: `Tipo no permitido: ${file.type}` },
       { status: 415 }
@@ -78,30 +110,62 @@ export async function POST(req: Request) {
   });
 
   try {
-    // 2) Ejecutamos transcripción con adapter
+    // 2) Leemos buffer UNA vez
     const buffer = Buffer.from(await file.arrayBuffer());
 
+    // 2.1) Validación de DURACIÓN (máx 30 min)
+    const durationSec = await getDurationSecondsSafe({
+      buffer,
+      mimeType: mime || "application/octet-stream",
+      filename: file.name,
+    });
+
+    if (durationSec !== null && durationSec > MAX_DURATION_SEC) {
+      // marcamos failed (o podrías usar un status "rejected" si lo añades)
+      await updateTranscriptionStatus({
+        id: row.id,
+        userId: session.user.id,
+        status: "failed",
+      });
+
+      return Response.json(
+        {
+          ok: false,
+          error: `Audio demasiado largo: ${durationSec}s. Máximo permitido: ${MAX_DURATION_SEC}s (30 min).`,
+        },
+        { status: 413 }
+      );
+    }
+
+    // 2.2) Ejecutamos transcripción con adapter
     const adapter = getTranscriptionAdapter();
     const out = await adapter.transcribeFile({
       fileBuffer: buffer,
       filename: file.name,
-      mimeType: file.type || "application/octet-stream",
+      mimeType: mime || "application/octet-stream",
       language: parsed.data.language,
       context: parsed.data.context || undefined,
     });
 
     // 3) Guardamos resultado en BD (done)
+    //    - Si durationSec pudo calcularse, la usamos.
+    //    - Si no, usamos out.durationSec si existe.
+    const finalDuration =
+      durationSec !== null
+        ? durationSec
+        : out.durationSec
+        ? Math.round(out.durationSec)
+        : null;
+
     const saved = await setTranscriptText({
       id: row.id,
       userId: session.user.id,
       transcriptText: out.text,
-      duration: out.durationSec ? Math.round(out.durationSec) : null,
+      duration: finalDuration,
       audioFilename: file.name,
     });
 
     // 4) 🔔 Notificación a n8n (NO bloqueante)
-    //    - Si falla, no rompe.
-    //    - Guardamos notification_status = sent/failed
     try {
       const user = await getUserById(session.user.id);
       if (user && saved) {
@@ -127,9 +191,6 @@ export async function POST(req: Request) {
       }
     } catch (err) {
       console.error("n8n notify failed (ignored):", err);
-
-      // Si incluso falla el setNotificationStatus, lo ignoramos también.
-      // La transcripción ya está guardada y en done.
     }
 
     return Response.json({ ok: true, transcription: saved });

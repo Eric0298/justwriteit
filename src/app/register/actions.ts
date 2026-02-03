@@ -3,6 +3,7 @@
 
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
+import { headers } from "next/headers";
 import { registerSchema } from "@/lib/validators/auth";
 import { createUser } from "@/lib/queries/users";
 
@@ -18,10 +19,60 @@ function getBcryptRounds() {
   return Number.isFinite(n) && n >= 10 && n <= 14 ? n : 12;
 }
 
+/**
+ * Rate limit simple en memoria (por IP).
+ * - Dev/mono-instancia: OK
+ * - Serverless multi-instancia: mejor Redis/Upstash
+ */
+type Bucket = { count: number; resetAt: number };
+const registerBuckets = new Map<string, Bucket>();
+
+async function getClientIpSafe(): Promise<string> {
+  const h = await headers(); // ✅ en Next 16 puede ser async
+  const xff = h.get("x-forwarded-for");
+  if (xff) return xff.split(",")[0].trim();
+  return h.get("x-real-ip") ?? "unknown";
+}
+
+function rateLimitOrThrow(input: { key: string; limit: number; windowMs: number }) {
+  const now = Date.now();
+  const existing = registerBuckets.get(input.key);
+
+  if (!existing || now > existing.resetAt) {
+    registerBuckets.set(input.key, { count: 1, resetAt: now + input.windowMs });
+    return;
+  }
+
+  if (existing.count >= input.limit) {
+    throw new Error("RATE_LIMIT");
+  }
+
+  existing.count += 1;
+  registerBuckets.set(input.key, existing);
+}
+
 export async function registerAction(
   _prevState: RegisterFormState,
   formData: FormData
 ): Promise<RegisterFormState> {
+  // ✅ Rate limit antes de hashear password (protege CPU)
+  try {
+    const ip = await getClientIpSafe();
+    rateLimitOrThrow({
+      key: `register:${ip}`,
+      limit: 5,
+      windowMs: 60_000,
+    });
+  } catch (e) {
+    if (e instanceof Error && e.message === "RATE_LIMIT") {
+      return {
+        ok: false,
+        formError: "Demasiados intentos. Espera 1 minuto y vuelve a intentarlo.",
+      };
+    }
+    return { ok: false, formError: "No se pudo procesar la solicitud." };
+  }
+
   const input = {
     name: String(formData.get("name") ?? ""),
     email: String(formData.get("email") ?? ""),
@@ -54,8 +105,9 @@ export async function registerAction(
 
     redirect("/login?registered=1");
   } catch (err: unknown) {
-    // Postgres duplicate email: 23505
     const anyErr = err as { code?: string; message?: string };
+
+    // Postgres duplicate email: 23505
     if (anyErr?.code === "23505") {
       return {
         ok: false,

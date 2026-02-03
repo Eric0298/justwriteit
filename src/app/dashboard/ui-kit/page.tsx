@@ -71,10 +71,17 @@ export default function UiKitPage() {
           <div className="grid gap-3">
             <p className="text-sm font-medium">Select</p>
             <div className="max-w-sm">
-              <Select label="Idioma de transcripción" hint="Más idiomas vendrán después.">
-                <option value="es">Español</option>
-                <option value="en">English</option>
-              </Select>
+              <Select
+  label="Idioma de transcripción"
+  hint="Más idiomas vendrán después."
+  name="language"
+  value="es"
+  onChange={() => {}}
+  options={[
+    { value: "es", label: "Español" },
+    { value: "en", label: "English" },
+  ]}
+/>
             </div>
           </div>
 
