@@ -1,0 +1,16 @@
+services:
+  whisper:
+    build:
+      context: ../../whisper-service
+    container_name: whisper-service
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+    # Healthcheck: marca el contenedor como "healthy" cuando /health responde OK
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health').read()\""]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 20s

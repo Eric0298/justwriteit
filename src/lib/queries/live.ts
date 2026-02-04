@@ -13,6 +13,12 @@ export type LiveSessionRow = {
   updated_at: string;
 };
 
+export type LiveChunkRow = {
+  session_id: string;
+  chunk_index: number;
+  data: Buffer;
+};
+
 export async function createLiveSession(input: {
   userId: string;
   language: string;
@@ -79,14 +85,12 @@ export async function getLiveSession(input: {
   return res.rows[0] ?? null;
 }
 
-export async function getLiveChunksAsBuffer(input: {
+export async function listLiveChunks(input: {
   sessionId: string;
-}): Promise<Buffer> {
-  // Esto concatena todos los chunks en memoria: suficiente para mock / demo
-  // Mas adelante usaremos storage (S3/R2) o streaming a proveedor.
-  const res = await query<{ data: Buffer }>(
+}): Promise<LiveChunkRow[]> {
+  const res = await query<LiveChunkRow>(
     `
-    select data
+    select session_id, chunk_index, data
     from live_audio_chunks
     where session_id=$1
     order by chunk_index asc
@@ -94,10 +98,35 @@ export async function getLiveChunksAsBuffer(input: {
     [input.sessionId]
   );
 
-  const buffers = res.rows.map((r) => r.data);
+  return res.rows;
+}
+
+export async function getLiveChunksAsBuffer(input: {
+  sessionId: string;
+}): Promise<Buffer> {
+  const rows = await listLiveChunks({ sessionId: input.sessionId });
+  const buffers = rows.map((r) => r.data);
   return Buffer.concat(buffers);
 }
 
 export async function deleteLiveChunks(input: { sessionId: string }) {
   await query(`delete from live_audio_chunks where session_id=$1`, [input.sessionId]);
+}
+
+export async function updateLiveSessionStatus(input: {
+  sessionId: string;
+  userId: string;
+  status: LiveSessionStatus;
+}): Promise<LiveSessionRow | null> {
+  const res = await query<LiveSessionRow>(
+    `
+    update live_sessions
+    set status=$3, updated_at=now()
+    where id=$1 and user_id=$2
+    returning id, user_id, language, context, mime_type, status, created_at, updated_at
+    `,
+    [input.sessionId, input.userId, input.status]
+  );
+
+  return res.rows[0] ?? null;
 }
