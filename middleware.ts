@@ -1,29 +1,34 @@
-// middleware.ts (EN LA RAÍZ DEL PROYECTO)
 import { NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import type { NextRequest } from "next/server";
 
-export async function middleware(req: Request) {
-  const url = new URL(req.url);
-  const pathname = url.pathname;
+function hasAuthCookie(req: NextRequest) {
+  return (
+    req.cookies.has("__Secure-authjs.session-token") ||
+    req.cookies.has("authjs.session-token")
+  );
+}
 
-  const token = await getToken({
-    req,
-    secret: process.env.AUTH_SECRET, 
-  });
+export function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
 
-  const isLoggedIn = !!token;
+  const isLoggedIn = hasAuthCookie(req);
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register");
   const isDashboard = pathname.startsWith("/dashboard");
 
-  // Si NO logueado y quiere entrar al dashboard → login
+  // No logueado intentando dashboard -> login
   if (!isLoggedIn && isDashboard) {
-    const loginUrl = new URL("/login", req.url);
-    loginUrl.searchParams.set("next", pathname);
-    return NextResponse.redirect(loginUrl);
+    const url = req.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("next", pathname);
+    return NextResponse.redirect(url);
   }
 
+  // Logueado intentando login/register -> dashboard
   if (isLoggedIn && isAuthPage) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    const url = req.nextUrl.clone();
+    url.pathname = "/dashboard";
+    url.searchParams.delete("next");
+    return NextResponse.redirect(url);
   }
 
   return NextResponse.next();
