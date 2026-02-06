@@ -27,15 +27,16 @@ export async function loginAction(
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
 
-  try {
-    await signIn("credentials", {
-      email,
-      password,
-      redirectTo: "/dashboard",
-    });
+  // ✅ importante: NO redirectTo aquí
+  const res = await signIn("credentials", {
+    email,
+    password,
+    redirect: false,
+  });
 
-    return { ok: true };
-  } catch {
+  if (res?.error) {
     return { ok: false, formError: "Email o contraseña incorrectos." };
   }
+
+  return { ok: true };
 }

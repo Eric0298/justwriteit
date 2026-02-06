@@ -12,6 +12,12 @@ const credentialsSchema = z.object({
 });
 
 export const authConfig = {
+  // ✅ Importante en Vercel / proxies
+  trustHost: true,
+
+  // ✅ Asegura que JWT/cookies se firmen siempre con el mismo secreto
+  secret: process.env.AUTH_SECRET,
+
   session: { strategy: "jwt" },
 
   providers: [

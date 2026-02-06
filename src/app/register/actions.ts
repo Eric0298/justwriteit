@@ -19,16 +19,11 @@ function getBcryptRounds() {
   return Number.isFinite(n) && n >= 10 && n <= 14 ? n : 12;
 }
 
-/**
- * Rate limit simple en memoria (por IP).
- * - Dev/mono-instancia: OK
- * - Serverless multi-instancia: mejor Redis/Upstash
- */
 type Bucket = { count: number; resetAt: number };
 const registerBuckets = new Map<string, Bucket>();
 
 async function getClientIpSafe(): Promise<string> {
-  const h = await headers(); // ✅ en Next 16 puede ser async
+  const h = await headers();
   const xff = h.get("x-forwarded-for");
   if (xff) return xff.split(",")[0].trim();
   return h.get("x-real-ip") ?? "unknown";
@@ -43,9 +38,7 @@ function rateLimitOrThrow(input: { key: string; limit: number; windowMs: number 
     return;
   }
 
-  if (existing.count >= input.limit) {
-    throw new Error("RATE_LIMIT");
-  }
+  if (existing.count >= input.limit) throw new Error("RATE_LIMIT");
 
   existing.count += 1;
   registerBuckets.set(input.key, existing);
@@ -55,20 +48,12 @@ export async function registerAction(
   _prevState: RegisterFormState,
   formData: FormData
 ): Promise<RegisterFormState> {
-  // ✅ Rate limit antes de hashear password (protege CPU)
   try {
     const ip = await getClientIpSafe();
-    rateLimitOrThrow({
-      key: `register:${ip}`,
-      limit: 5,
-      windowMs: 60_000,
-    });
+    rateLimitOrThrow({ key: `register:${ip}`, limit: 5, windowMs: 60_000 });
   } catch (e) {
     if (e instanceof Error && e.message === "RATE_LIMIT") {
-      return {
-        ok: false,
-        formError: "Demasiados intentos. Espera 1 minuto y vuelve a intentarlo.",
-      };
+      return { ok: false, formError: "Demasiados intentos. Espera 1 minuto y vuelve a intentarlo." };
     }
     return { ok: false, formError: "No se pudo procesar la solicitud." };
   }
@@ -102,12 +87,9 @@ export async function registerAction(
       email: parsed.data.email,
       passwordHash,
     });
-
-    redirect("/login?registered=1");
   } catch (err: unknown) {
     const anyErr = err as { code?: string; message?: string };
 
-    // Postgres duplicate email: 23505
     if (anyErr?.code === "23505") {
       return {
         ok: false,
@@ -116,9 +98,9 @@ export async function registerAction(
       };
     }
 
-    return {
-      ok: false,
-      formError: anyErr?.message ?? "No se pudo crear la cuenta.",
-    };
+    return { ok: false, formError: anyErr?.message ?? "No se pudo crear la cuenta." };
   }
+
+  // ✅ SIEMPRE fuera del try/catch
+  redirect("/login?registered=1");
 }
