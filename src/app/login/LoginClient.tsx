@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -12,17 +11,7 @@ import { loginAction } from "./actions";
 const initialState: LoginFormState = { ok: false };
 
 export default function LoginClient() {
-  const router = useRouter();
-  const [submitted, setSubmitted] = React.useState(false);
-
   const [state, formAction, isPending] = useActionState(loginAction, initialState);
-
-  React.useEffect(() => {
-    if (submitted && state.ok) {
-      router.push("/dashboard");
-      router.refresh();
-    }
-  }, [submitted, state.ok, router]);
 
   return (
     <main className="container-app py-14">
@@ -30,7 +19,7 @@ export default function LoginClient() {
         <h1 className="text-2xl font-semibold">Iniciar sesión</h1>
         <p className="mt-2 text-sm text-muted">Accede a tu dashboard.</p>
 
-        {submitted && state.formError ? (
+        {state.formError ? (
           <div
             className="mt-4 rounded-md border p-3 text-sm"
             style={{ borderColor: "rgba(239, 68, 68, 0.6)" }}
@@ -41,20 +30,9 @@ export default function LoginClient() {
           </div>
         ) : null}
 
-        <form
-          action={(fd) => {
-            setSubmitted(true);
-            return formAction(fd);
-          }}
-          className="mt-6 grid gap-4"
-        >
+        <form action={formAction} className="mt-6 grid gap-4">
           <Input name="email" label="Email" type="email" autoComplete="email" />
-          <Input
-            name="password"
-            label="Contraseña"
-            type="password"
-            autoComplete="current-password"
-          />
+          <Input name="password" label="Contraseña" type="password" autoComplete="current-password" />
 
           <Button type="submit" isLoading={isPending}>
             Entrar
@@ -63,7 +41,7 @@ export default function LoginClient() {
 
         <p className="mt-6 text-sm text-muted">
           ¿No tienes cuenta?{" "}
-          <Link className="underline underline-offset-4" href="/register">
+          <Link prefetch={false} className="underline underline-offset-4" href="/register">
             Crear cuenta
           </Link>
         </p>

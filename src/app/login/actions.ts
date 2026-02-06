@@ -13,12 +13,11 @@ export async function loginAction(
   _prev: LoginFormState,
   formData: FormData
 ): Promise<LoginFormState> {
-  // ✅ Rate limit por IP (anti brute-force)
   const ip = await getClientIp();
   const rl = await rateLimit({
     key: `auth:login:ip:${ip}`,
-    limit: 10, // 10 intentos
-    windowMs: 10 * 60_000, // por 10 min
+    limit: 10,
+    windowMs: 10 * 60_000,
   });
 
   if (!rl.ok) {
@@ -29,18 +28,14 @@ export async function loginAction(
   const password = String(formData.get("password") ?? "");
 
   try {
-    const res = await signIn("credentials", {
+    await signIn("credentials", {
       email,
       password,
-      redirect: false,
+      redirectTo: "/dashboard",
     });
-
-    if (res?.error) {
-      return { ok: false, formError: "Email o contraseña incorrectos." };
-    }
 
     return { ok: true };
   } catch {
-    return { ok: false, formError: "No se pudo iniciar sesión. Inténtalo de nuevo." };
+    return { ok: false, formError: "Email o contraseña incorrectos." };
   }
 }
