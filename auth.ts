@@ -12,13 +12,13 @@ const credentialsSchema = z.object({
 });
 
 export const authConfig = {
-  // ✅ Importante en Vercel / proxies
   trustHost: true,
-
-  // ✅ Asegura que JWT/cookies se firmen siempre con el mismo secreto
   secret: process.env.AUTH_SECRET,
 
-  session: { strategy: "jwt" },
+  session: { 
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 días
+  },
 
   providers: [
     Credentials({
@@ -51,14 +51,29 @@ export const authConfig = {
 
   callbacks: {
     async jwt({ token, user }) {
-      if (user?.id) token.id = user.id;
+      if (user?.id) {
+        token.id = user.id;
+      }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
+      if (session.user && token.id) {
         (session.user as { id?: string }).id = token.id as string;
       }
       return session;
+    },
+    // ✅ Callback autorizado para middleware
+    authorized({ auth, request }) {
+      const { pathname } = request.nextUrl;
+      const isLoggedIn = !!auth?.user;
+      const isDashboard = pathname.startsWith("/dashboard");
+      
+      // Permitir acceso a dashboard solo si está logueado
+      if (isDashboard) {
+        return isLoggedIn;
+      }
+      
+      return true;
     },
   },
 

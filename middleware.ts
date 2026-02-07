@@ -1,17 +1,11 @@
+// middleware.ts
+import { auth } from "@/../auth";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-function hasAuthCookie(req: NextRequest) {
-  return (
-    req.cookies.has("__Secure-authjs.session-token") ||
-    req.cookies.has("authjs.session-token")
-  );
-}
-
-export function middleware(req: NextRequest) {
+export default auth((req) => {
   const { pathname } = req.nextUrl;
+  const isLoggedIn = !!req.auth;
 
-  const isLoggedIn = hasAuthCookie(req);
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register");
   const isDashboard = pathname.startsWith("/dashboard");
 
@@ -32,7 +26,7 @@ export function middleware(req: NextRequest) {
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: ["/dashboard/:path*", "/login", "/register"],
