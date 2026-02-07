@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { auth } from "@/../auth";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { THEME_COOKIE, normalizeTheme, type Theme } from "@/lib/theme";
 
@@ -24,6 +26,9 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
   const cookieStore = await cookies();
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
   const theme = (normalizeTheme(themeCookie) ?? "light") as Theme;

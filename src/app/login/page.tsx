@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { auth } from "@/../auth";
 import LoginClient from "./LoginClient";
 
 export const metadata: Metadata = {
@@ -6,17 +8,11 @@ export const metadata: Metadata = {
   description: "Accede a tu cuenta de JustWriteIt.",
   robots: { index: false, follow: false },
   alternates: { canonical: "/login" },
-  openGraph: {
-    title: "Login · JustWriteIt",
-    description: "Accede a tu cuenta de JustWriteIt.",
-    url: "/login",
-  },
-  twitter: {
-    title: "Login · JustWriteIt",
-    description: "Accede a tu cuenta de JustWriteIt.",
-  },
 };
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await auth();
+  if (session?.user?.id) redirect("/dashboard");
+
   return <LoginClient />;
 }
