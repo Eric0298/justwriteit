@@ -24,7 +24,7 @@ export async function loginAction(
     });
   } catch (e) {
     if (e instanceof AuthError) {
-      return { ok: false, formError: "Credenciales incorrectas." };
+      return { ok: false, formError: "Email o contraseña incorrectos." };
     }
     return { ok: false, formError: "No se pudo iniciar sesión." };
   }
