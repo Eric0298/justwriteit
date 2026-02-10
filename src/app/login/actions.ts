@@ -1,7 +1,6 @@
 "use server";
 
 import { signIn } from "@/../auth";
-import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 
 export type LoginFormState = {
@@ -20,14 +19,14 @@ export async function loginAction(
     await signIn("credentials", {
       email,
       password,
-      redirect: false,
+      redirectTo: "/dashboard",
     });
+
+    return { ok: true };
   } catch (e) {
     if (e instanceof AuthError) {
-      return { ok: false, formError: "Email o contraseña incorrectos." };
+      return { ok: false, formError: "Credenciales incorrectas." };
     }
-    return { ok: false, formError: "No se pudo iniciar sesión." };
+    throw e;
   }
-
-  redirect("/dashboard");
 }

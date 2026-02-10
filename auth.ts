@@ -1,5 +1,6 @@
-import NextAuth, { type NextAuthConfig } from "next-auth";
+import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import type { NextAuthConfig } from "next-auth";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { getUserByEmail } from "@/lib/queries/users";
@@ -11,12 +12,10 @@ const credentialsSchema = z.object({
 
 export const authConfig = {
   trustHost: true,
-  secret: process.env.NEXTAUTH_SECRET,
 
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
-  },
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+
+  session: { strategy: "jwt" },
 
   providers: [
     Credentials({
@@ -54,9 +53,7 @@ export const authConfig = {
     },
   },
 
-  pages: {
-    signIn: "/login",
-  },
+  pages: { signIn: "/login" },
 } satisfies NextAuthConfig;
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);
