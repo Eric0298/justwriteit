@@ -47,7 +47,6 @@ export async function registerAction(
   _prevState: RegisterFormState,
   formData: FormData
 ): Promise<RegisterFormState> {
-  // Rate limit
   try {
     const ip = await getClientIpSafe();
     rateLimitOrThrow({ key: `register:${ip}`, limit: 5, windowMs: 60_000 });
@@ -58,7 +57,6 @@ export async function registerAction(
     return { ok: false, formError: "No se pudo procesar la solicitud." };
   }
 
-  // ✅ Normaliza input (especialmente email)
   const input = {
     name: String(formData.get("name") ?? "").trim(),
     email: String(formData.get("email") ?? "").trim().toLowerCase(),
@@ -85,16 +83,10 @@ export async function registerAction(
 
     await createUser({
       name: parsed.data.name,
-      email: parsed.data.email, // ya normalizado
+      email: parsed.data.email,
       passwordHash,
     });
   } catch (err: unknown) {
-    // (Opcional) si algún día aparece un redirect aquí, lo re-lanzamos
-    if (err && typeof err === "object" && "digest" in err) {
-const digest = (err as { digest: unknown }).digest;
-      if (typeof digest === "string" && digest.startsWith("NEXT_REDIRECT")) throw err;
-    }
-
     const anyErr = err as { code?: string; message?: string };
 
     if (anyErr?.code === "23505") {
@@ -108,6 +100,5 @@ const digest = (err as { digest: unknown }).digest;
     return { ok: false, formError: anyErr?.message ?? "No se pudo crear la cuenta." };
   }
 
-  // ✅ Redirect fuera del try/catch: perfecto
   redirect("/login?registered=1");
 }

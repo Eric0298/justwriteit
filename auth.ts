@@ -10,11 +10,14 @@ const credentialsSchema = z.object({
   password: z.string().min(1),
 });
 
-export const authConfig = {
+export const authConfig: NextAuthConfig = {
   trustHost: true,
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
 
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 días
+  },
 
   providers: [
     Credentials({
@@ -36,7 +39,11 @@ export const authConfig = {
         const ok = await bcrypt.compare(password, user.password_hash);
         if (!ok) return null;
 
-        return { id: user.id, name: user.name, email: user.email };
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        };
       },
     }),
   ],
@@ -47,12 +54,16 @@ export const authConfig = {
       return token;
     },
     async session({ session, token }) {
-      if (session.user) (session.user as { id?: string }).id = token.id as string;
+      if (session.user && token.id) {
+        (session.user as { id: string }).id = String(token.id);
+      }
       return session;
     },
   },
 
-  pages: { signIn: "/login" },
-} satisfies NextAuthConfig;
+  pages: {
+    signIn: "/login",
+  },
+};
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);

@@ -5,8 +5,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import type { LoginFormState } from "./actions";
-import { loginAction } from "./actions";
+import { loginAction, type LoginFormState } from "./actions";
 
 const initialState: LoginFormState = { ok: false };
 
@@ -19,8 +18,8 @@ export default function LoginClient() {
         <h1 className="text-2xl font-semibold">Iniciar sesión</h1>
 
         {state.formError ? (
-          <div 
-            className="mt-4 rounded-md border p-3 text-sm" 
+          <div
+            className="mt-4 rounded-md border p-3 text-sm"
             style={{ borderColor: "rgba(239, 68, 68, 0.6)" }}
             role="alert"
             aria-live="polite"
@@ -30,22 +29,14 @@ export default function LoginClient() {
         ) : null}
 
         <form action={formAction} className="mt-6 grid gap-4">
-          <Input 
-            name="email" 
-            label="Email" 
-            type="email" 
-            autoComplete="email"
-            required
-          />
-          
-          <Input 
-            name="password" 
-            label="Contraseña" 
-            type="password" 
+          <Input name="email" label="Email" type="email" autoComplete="email" required />
+          <Input
+            name="password"
+            label="Contraseña"
+            type="password"
             autoComplete="current-password"
             required
           />
-
           <Button type="submit" isLoading={isPending}>
             Entrar
           </Button>

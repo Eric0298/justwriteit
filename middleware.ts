@@ -1,30 +1,30 @@
-import { auth } from "@/../auth";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { jwtVerify } from "jose";
 
-export default auth((req) => {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const isLoggedIn = !!req.auth;
 
-  const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register");
-  const isDashboard = pathname.startsWith("/dashboard");
-
-  if (!isLoggedIn && isDashboard) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
+  if (!pathname.startsWith("/dashboard")) {
+    return NextResponse.next();
   }
 
-  if (isLoggedIn && isAuthPage) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/dashboard";
-    url.searchParams.delete("next");
-    return NextResponse.redirect(url);
+  const token =
+    req.cookies.get("__Secure-next-auth.session-token")?.value ||
+    req.cookies.get("next-auth.session-token")?.value;
+
+  if (!token) {
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  return NextResponse.next();
-});
+  try {
+    const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET);
+    await jwtVerify(token, secret);
+    return NextResponse.next();
+  } catch {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
+}
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/register"],
+  matcher: ["/dashboard/:path*"],
 };
