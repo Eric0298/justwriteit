@@ -1,3 +1,4 @@
+// auth.ts
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import type { NextAuthConfig } from "next-auth";
@@ -12,8 +13,7 @@ const credentialsSchema = z.object({
 
 export const authConfig = {
   trustHost: true,
-
-  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
 
   session: { strategy: "jwt" },
 
