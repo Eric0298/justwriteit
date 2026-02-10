@@ -1,6 +1,7 @@
 "use server";
 
 import { signIn } from "@/../auth";
+import { redirect } from "next/navigation";
 import { rateLimit } from "@/lib/security/rateLimit";
 import { getClientIp } from "@/lib/security/ip";
 import { AuthError } from "next-auth";
@@ -22,7 +23,10 @@ export async function loginAction(
   });
 
   if (!rl.ok) {
-    return { ok: false, formError: "Demasiados intentos. Espera unos minutos y vuelve a probar." };
+    return { 
+      ok: false, 
+      formError: "Demasiados intentos. Espera unos minutos y vuelve a probar." 
+    };
   }
 
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -36,14 +40,14 @@ export async function loginAction(
     await signIn("credentials", {
       email,
       password,
-      redirectTo: "/dashboard",
+      redirect: false,
     });
-
-    return { ok: true };
-  } catch (e) {
-    if (e instanceof AuthError) {
+  } catch (error) {
+    if (error instanceof AuthError) {
       return { ok: false, formError: "Email o contraseña incorrectos." };
     }
-    throw e;
+    throw error;
   }
+
+  redirect("/dashboard");
 }
