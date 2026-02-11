@@ -1,4 +1,3 @@
-// src/app/register/page.tsx
 import type { Metadata } from "next";
 import RegisterClient from "./RegisterClient";
 
@@ -19,5 +18,6 @@ export const metadata: Metadata = {
 };
 
 export default function RegisterPage() {
+  <div className="flex min-h-screen items-center justify-center px-4 py-10"></div>
   return <RegisterClient />;
 }

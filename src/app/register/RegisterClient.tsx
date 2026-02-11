@@ -22,9 +22,7 @@ export default function RegisterClient() {
   });
 
   const [touched, setTouched] = React.useState<Partial<Record<keyof RegisterInput, boolean>>>({});
-  const [clientErrors, setClientErrors] = React.useState<Partial<Record<keyof RegisterInput, string>>>(
-    {}
-  );
+  const [clientErrors, setClientErrors] = React.useState<Partial<Record<keyof RegisterInput, string>>>({});
   const [clientSummary, setClientSummary] = React.useState<string[]>([]);
 
   function buildSummary(errors: Partial<Record<keyof RegisterInput, string>>) {
@@ -65,7 +63,6 @@ export default function RegisterClient() {
     return false;
   }
 
-  // Validación en vivo
   React.useEffect(() => {
     validateClient(form, { onlyTouched: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -78,8 +75,12 @@ export default function RegisterClient() {
       role="alert"
       aria-live="polite"
     >
-      <p className="font-medium text-danger">No se pudo crear la cuenta</p>
-      <p className="mt-1 text-danger">{state.formError}</p>
+      <p className="font-medium" style={{ color: "rgb(var(--danger))" }}>
+        No se pudo crear la cuenta
+      </p>
+      <p className="mt-1" style={{ color: "rgb(var(--danger))" }}>
+        {state.formError}
+      </p>
     </div>
   ) : null;
 
@@ -91,8 +92,10 @@ export default function RegisterClient() {
         role="alert"
         aria-live="polite"
       >
-        <p className="font-medium text-danger">Ajusta esto y listo:</p>
-        <ul className="mt-2 space-y-1 text-danger">
+        <p className="font-medium" style={{ color: "rgb(var(--danger))" }}>
+          Ajusta esto y listo:
+        </p>
+        <ul className="mt-2 space-y-1" style={{ color: "rgb(var(--danger))" }}>
           {clientSummary.map((line) => (
             <li key={line}>{line}</li>
           ))}
@@ -101,10 +104,12 @@ export default function RegisterClient() {
     ) : null;
 
   return (
-    <main className="container-app py-14">
-      <div className="mx-auto max-w-md card p-6">
-        <h1 className="text-2xl font-semibold">Crear cuenta</h1>
-        <p className="mt-2 text-sm text-muted">Crea tu cuenta para guardar transcripciones y ajustes.</p>
+    <div className="w-full max-w-md">
+      <div className="card p-6 sm:p-8">
+        <h1 className="text-2xl font-semibold text-center">Crear cuenta</h1>
+        <p className="mt-2 text-center text-sm text-muted">
+          Crea tu cuenta para guardar transcripciones y ajustes.
+        </p>
 
         {serverErrorBox}
         {clientBox}
@@ -166,18 +171,18 @@ export default function RegisterClient() {
             <PasswordStrength password={form.password} />
           </div>
 
-          <Button type="submit" isLoading={isPending}>
+          <Button type="submit" isLoading={isPending} className="w-full">
             Crear cuenta
           </Button>
         </form>
 
-        <p className="mt-6 text-sm text-muted">
+        <p className="mt-6 text-center text-sm text-muted">
           ¿Ya tienes cuenta?{" "}
           <Link className="underline underline-offset-4" href="/login">
             Iniciar sesión
           </Link>
         </p>
       </div>
-    </main>
+    </div>
   );
 }
