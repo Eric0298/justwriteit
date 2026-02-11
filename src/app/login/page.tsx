@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { auth } from "@/../auth";
 import LoginClient from "./LoginClient";
 
 export const metadata: Metadata = {
@@ -7,10 +9,15 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await auth();
+  if (session?.user?.id) redirect("/dashboard");
+
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-10">
-      <LoginClient />
-    </div>
+    <main className="min-h-[calc(100vh-3.5rem)] flex items-center">
+      <div className="container-app w-full py-10 flex justify-center">
+        <LoginClient />
+      </div>
+    </main>
   );
 }
