@@ -1,4 +1,3 @@
-// src/app/dashboard/transcribe-live/page.tsx
 "use client";
 
 import * as React from "react";
@@ -61,6 +60,17 @@ function isLiveFinishErr(v: unknown): v is LiveFinishErr {
   return isObject(v) && v.ok === false && typeof v.error === "string";
 }
 
+/** Lee respuesta: intenta JSON y si no puede, devuelve texto */
+async function readJsonOrText(res: Response): Promise<unknown> {
+  const contentType = res.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    return res.json().catch(() => null);
+  }
+  const text = await res.text().catch(() => "");
+  // si es texto, devolvemos algo estructurado para mostrarlo
+  return { ok: false, error: text || "Respuesta no JSON" };
+}
+
 export default function TranscribeLivePage() {
   const { push } = useToast();
 
@@ -77,10 +87,11 @@ export default function TranscribeLivePage() {
   const sessionIdRef = React.useRef<string | null>(null);
   const transcriptionIdRef = React.useRef<string | null>(null);
 
+  // Timer
   React.useEffect(() => {
     if (status !== "recording") return;
-    const t = setInterval(() => setSeconds((s) => s + 1), 1000);
-    return () => clearInterval(t);
+    const t = window.setInterval(() => setSeconds((s) => s + 1), 1000);
+    return () => window.clearInterval(t);
   }, [status]);
 
   function reset() {
@@ -90,9 +101,13 @@ export default function TranscribeLivePage() {
     chunkIndexRef.current = 0;
     sessionIdRef.current = null;
     transcriptionIdRef.current = null;
+    recorderRef.current = null;
+    streamRef.current = null;
   }
 
   async function start() {
+    if (status !== "idle") return;
+
     try {
       setResultText("");
       setSeconds(0);
@@ -100,8 +115,10 @@ export default function TranscribeLivePage() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
+      const preferredMime = "audio/webm";
+      const mimeType = MediaRecorder.isTypeSupported(preferredMime) ? preferredMime : "";
 
+      // 1) crear sesión
       const resStart = await fetch("/api/transcribe/live/start", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -112,30 +129,31 @@ export default function TranscribeLivePage() {
         }),
       });
 
-      const startData: unknown = await resStart.json().catch(() => null);
+      const startData: unknown = await readJsonOrText(resStart);
 
       if (!resStart.ok) {
-        const msg = isLiveStartErr(startData)
-          ? startData.error
-          : "No se pudo iniciar.";
+        const msg = isLiveStartErr(startData) ? startData.error : "No se pudo iniciar.";
         push({ title: "Error", message: msg, variant: "danger" });
         stream.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
         return;
       }
 
       if (!isLiveStartOk(startData)) {
         push({ title: "Error", message: "Respuesta inválida del servidor.", variant: "danger" });
         stream.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
         return;
       }
 
       sessionIdRef.current = startData.sessionId;
       transcriptionIdRef.current = startData.transcriptionId;
 
+      // 2) MediaRecorder
       const rec = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       recorderRef.current = rec;
 
-      rec.ondataavailable = async (ev) => {
+      rec.ondataavailable = async (ev: BlobEvent) => {
         if (!ev.data || ev.data.size === 0) return;
 
         const sessionId = sessionIdRef.current;
@@ -150,33 +168,30 @@ export default function TranscribeLivePage() {
 
         const res = await fetch("/api/transcribe/live/chunk", { method: "POST", body: fd });
         if (!res.ok) {
-          const data: unknown = await res.json().catch(() => null);
+          const data: unknown = await readJsonOrText(res);
           const msg =
             isObject(data) && typeof data.error === "string"
               ? data.error
               : "No se pudo enviar un chunk.";
-
-          push({
-            title: "Error enviando audio",
-            message: msg,
-            variant: "danger",
-          });
+          push({ title: "Error enviando audio", message: msg, variant: "danger" });
         }
       };
 
       rec.start(1000);
       setStatus("recording");
+
       push({
         title: "Grabación iniciada 🎙️",
         message: "Hablando... enviando audio por chunks.",
         variant: "success",
       });
-    } catch (e) {
+    } catch (e: unknown) {
       push({
         title: "No se pudo acceder al micrófono",
         message: e instanceof Error ? e.message : "Permisos o dispositivo no disponible.",
         variant: "danger",
       });
+      setStatus("idle");
     }
   }
 
@@ -201,10 +216,16 @@ export default function TranscribeLivePage() {
     const sessionId = sessionIdRef.current;
     const transcriptionId = transcriptionIdRef.current;
 
-    if (!rec || !sessionId || !transcriptionId) return;
+    if (!rec || !sessionId || !transcriptionId) {
+      push({ title: "Error", message: "Falta sessionId/transcriptionId.", variant: "danger" });
+      return;
+    }
+
+    if (status === "stopping") return;
 
     setStatus("stopping");
 
+    // fuerza flush del último chunk
     try {
       rec.requestData();
     } catch {
@@ -214,18 +235,19 @@ export default function TranscribeLivePage() {
     const stopped = new Promise<void>((resolve) => {
       const prev = rec.onstop;
       rec.onstop = (ev: Event) => {
-        try {
-          if (typeof prev === "function") prev.call(rec, ev);
-        } finally {
-          resolve();
+        // preserva handlers previos
+        if (typeof prev === "function") {
+          prev.call(rec, ev);
         }
+        resolve();
       };
     });
 
     rec.stop();
     stream?.getTracks().forEach((t) => t.stop());
-
     await stopped;
+
+    // pequeña espera por si el último chunk llega tarde
     await new Promise((r) => setTimeout(r, 300));
 
     const resFinish = await fetch("/api/transcribe/live/finish", {
@@ -234,12 +256,10 @@ export default function TranscribeLivePage() {
       body: JSON.stringify({ sessionId, transcriptionId }),
     });
 
-    const finishData: unknown = await resFinish.json().catch(() => null);
+    const finishData: unknown = await readJsonOrText(resFinish);
 
     if (!resFinish.ok) {
-      const msg = isLiveFinishErr(finishData)
-        ? finishData.error
-        : "No se pudo finalizar.";
+      const msg = isLiveFinishErr(finishData) ? finishData.error : "No se pudo finalizar.";
       push({ title: "Error", message: msg, variant: "danger" });
       setStatus("idle");
       return;
@@ -256,6 +276,8 @@ export default function TranscribeLivePage() {
     setStatus("done");
     push({ title: "Transcripción lista ✅", message: "Guardada en tu historial.", variant: "success" });
   }
+
+  const canFinish = status === "recording" || status === "paused";
 
   return (
     <Card className="p-6">
@@ -329,9 +351,21 @@ export default function TranscribeLivePage() {
             </>
           ) : null}
 
+          {status === "stopping" ? (
+            <Button disabled aria-label="Finalizando">
+              Finalizando...
+            </Button>
+          ) : null}
+
           {status === "done" ? (
             <Button onClick={reset} variant="ghost" aria-label="Nueva grabación">
               Nueva
+            </Button>
+          ) : null}
+
+          {!canFinish && status !== "idle" && status !== "done" && status !== "stopping" ? (
+            <Button onClick={reset} variant="ghost">
+              Reset
             </Button>
           ) : null}
         </div>
