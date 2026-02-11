@@ -1,12 +1,13 @@
-// src/app/api/upload/route.ts
 import { NextResponse } from "next/server";
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { auth } from "@/../auth";
+import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
+import type { PutBlobResult } from "@vercel/blob";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 
-const ALLOWED_AUDIO = [
+const MAX_BYTES = 25 * 1024 * 1024; // 25MB
+
+const ALLOWED_AUDIO_TYPES = [
   "audio/mpeg",
   "audio/mp3",
   "audio/wav",
@@ -18,37 +19,47 @@ const ALLOWED_AUDIO = [
   "audio/aac",
 ];
 
-export async function POST(request: Request): Promise<NextResponse> {
+export async function POST(request: Request) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "No autenticado." }, { status: 401 });
+  }
+
   const body = (await request.json()) as HandleUploadBody;
 
   try {
-    const json = await handleUpload({
-      request,
+    const jsonResponse = await handleUpload({
       body,
+      request,
 
       onBeforeGenerateToken: async () => {
-        // ✅ importante: autenticar antes de emitir token
-        const session = await auth();
-        if (!session?.user?.id) throw new Error("No autenticado");
-
         return {
-          allowedContentTypes: ALLOWED_AUDIO,
-          // opcional (te vuelve en onUploadCompleted)
-          tokenPayload: JSON.stringify({ userId: session.user.id }),
+          allowedContentTypes: ALLOWED_AUDIO_TYPES,
+          maximumSizeInBytes: MAX_BYTES,
+          addRandomSuffix: true,
+
+          tokenPayload: JSON.stringify({
+            userId: session.user.id,
+          }),
         };
       },
 
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
-        // Aquí podrías guardar blob.url en BD si lo quisieras.
-        // O simplemente loguear.
-        console.log("Blob upload completed:", blob.url, tokenPayload);
+      onUploadCompleted: async ({
+        blob,
+        tokenPayload,
+      }: {
+        blob: PutBlobResult;
+        tokenPayload?: string | null;
+      }) => {
+        void blob;
+        void tokenPayload;
       },
     });
 
-    return NextResponse.json(json);
+    return NextResponse.json(jsonResponse);
   } catch (error) {
     return NextResponse.json(
-      { ok: false, error: (error as Error).message },
+      { error: (error as Error).message },
       { status: 400 }
     );
   }
