@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { upload } from "@vercel/blob/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -23,6 +24,13 @@ type ApiOk = {
 
 type ApiErr = { ok: false; error: string };
 
+async function safeReadJson(res: Response) {
+  const ct = res.headers.get("content-type") || "";
+  if (ct.includes("application/json")) return res.json();
+  const text = await res.text();
+  return { ok: false, error: text || `Respuesta no JSON (status ${res.status})` };
+}
+
 export default function TranscribeFilePage() {
   const { push } = useToast();
 
@@ -32,7 +40,7 @@ export default function TranscribeFilePage() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [result, setResult] = React.useState<ApiOk["transcription"] | null>(null);
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!file) {
@@ -44,15 +52,28 @@ export default function TranscribeFilePage() {
     setResult(null);
 
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("language", language);
-      fd.append("context", context);
+      // 1) Subir a Vercel Blob desde el cliente (evita límite 4.5MB)
+      const blob = await upload(file.name, file, {
+        access: "public",
+        handleUploadUrl: "/api/upload",
+      });
 
-      const res = await fetch("/api/transcribe/file", { method: "POST", body: fd });
-      const data = (await res.json()) as ApiOk | ApiErr;
+      // 2) Pedir transcripción al backend con blobUrl (JSON pequeñito)
+      const res = await fetch("/api/transcribe/file", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          language,
+          context,
+          blobUrl: blob.url,
+          originalName: file.name,
+          mimeType: file.type,
+        }),
+      });
 
-      if (!res.ok || !data.ok) {
+      const data = (await safeReadJson(res)) as ApiOk | ApiErr;
+
+      if (!res.ok || !("ok" in data) || !data.ok) {
         const msg = "error" in data ? data.error : "No se pudo transcribir.";
         push({ title: "Error", message: msg, variant: "danger" });
         return;
@@ -77,7 +98,7 @@ export default function TranscribeFilePage() {
         <div>
           <h1 className="text-2xl font-semibold">Transcribir archivo</h1>
           <p className="mt-2 text-sm text-muted">
-            Sube un audio, elige idioma y genera una transcripción (mock por ahora).
+            Sube un audio, elige idioma y genera una transcripción.
           </p>
         </div>
         <Badge>{result?.status ?? "—"}</Badge>
