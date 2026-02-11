@@ -1,4 +1,3 @@
-// src/components/ui/Select.tsx
 "use client";
 
 import * as React from "react";
@@ -10,10 +9,7 @@ export type SelectOption = {
   disabled?: boolean;
 };
 
-type SelectProps = Omit<
-  React.SelectHTMLAttributes<HTMLSelectElement>,
-  "children"
-> & {
+type SelectProps = Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "children"> & {
   label?: string;
   hint?: string;
   error?: string;
@@ -40,13 +36,23 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         <select
           id={selectId}
           ref={ref}
-          className={cn("input", className)}
+          className={cn(
+            "input",
+            "bg-[rgb(var(--bg))] text-[rgb(var(--fg))]",
+            error ? "border-[rgb(var(--danger))]" : "",
+            className
+          )}
           aria-invalid={Boolean(error) || undefined}
           aria-describedby={describedBy}
           {...props}
         >
           {options.map((opt) => (
-            <option key={opt.value} value={opt.value} disabled={opt.disabled}>
+            <option
+              key={opt.value}
+              value={opt.value}
+              disabled={opt.disabled}
+              className="bg-[rgb(var(--bg))] text-[rgb(var(--fg))]"
+            >
               {opt.label}
             </option>
           ))}

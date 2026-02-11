@@ -90,9 +90,11 @@ body {
   }
 
   .input {
-    @apply w-full rounded-[var(--radius-md)] border bg-transparent px-3 py-2 text-sm transition;
-    border-color: rgb(var(--border));
-  }
+  @apply w-full rounded-[var(--radius-md)] border px-3 py-2 text-sm transition;
+  background: rgb(var(--card));   
+  color: rgb(var(--fg));          
+  border-color: rgb(var(--border));
+}
 
   .input:focus {
     outline: none;
@@ -109,4 +111,8 @@ body {
     @apply text-xs;
     color: rgb(var(--muted));
   }
+   select.input option {
+  background: rgb(var(--card));
+  color: rgb(var(--fg));
+}
 }
