@@ -9,10 +9,10 @@ const items = [
   { href: "/dashboard/transcribe-file", label: "Transcribir archivo" },
   { href: "/dashboard/transcribe-live", label: "Transcribir en vivo" },
   { href: "/dashboard/history", label: "Historial" },
-  { href: "/dashboard/settings", label: "Ajustes" }
+  { href: "/dashboard/settings", label: "Ajustes" },
 ] as const;
 
-export function DashboardNav() {
+export function DashboardNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
@@ -27,6 +27,7 @@ export function DashboardNav() {
           <Link
             key={item.href}
             href={item.href}
+            onClick={onNavigate}
             className={cn(
               "rounded-md px-3 py-2 text-sm transition",
               active
