@@ -13,19 +13,27 @@ type TranscribeFileOutput = {
   durationSec: number;
 };
 
-export function getTranscriptionAdapter() {
-  const whisperUrl = process.env.WHISPER_SERVICE_URL;
+function sanitizeBaseUrl(raw: string) {
+  const url = raw.trim().replace(/\/+$/, ""); // quita trailing slash
+  if (!/^https?:\/\//i.test(url)) {
+    throw new Error("WHISPER_SERVICE_URL debe empezar por http:// o https://");
+  }
+  return url;
+}
 
-  if (!whisperUrl) {
+export function getTranscriptionAdapter() {
+  const raw = process.env.WHISPER_SERVICE_URL;
+
+  if (!raw) {
     throw new Error("WHISPER_SERVICE_URL no definida");
   }
 
+  const whisperUrl = sanitizeBaseUrl(raw);
   const whisper = new WhisperHttpAdapter(whisperUrl);
 
   return {
     async transcribeFile(input: TranscribeFileInput): Promise<TranscribeFileOutput> {
       const res = await whisper.transcribeFile(input);
-
       return {
         text: res.text,
         durationSec: res.durationSec,
