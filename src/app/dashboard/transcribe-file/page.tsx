@@ -1,7 +1,7 @@
-// src/app/dashboard/transcribe-file/page.tsx
 "use client";
 
 import * as React from "react";
+import { upload } from "@vercel/blob/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -9,21 +9,25 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
 
-type ApiOk = {
-  ok: true;
-  transcription: {
-    id: string;
-    status: string;
-    language: string;
-    audio_filename: string | null;
-    duration: number | null;
-    transcript_text: string | null;
-    created_at: string;
-  };
+type Transcription = {
+  id: string;
+  status: string;
+  language: string;
+  audio_filename: string | null;
+  duration: number | null;
+  transcript_text: string | null;
+  created_at: string;
 };
+
+type ApiOk = { ok: true; transcription: Transcription };
+type ApiErr = { ok: false; error: string; details?: unknown };
 
 function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null;
+}
+
+function pickErrorMessage(data: unknown, fallback: string) {
+  return isObject(data) && typeof data.error === "string" ? data.error : fallback;
 }
 
 export default function TranscribeFilePage() {
@@ -33,13 +37,17 @@ export default function TranscribeFilePage() {
   const [language, setLanguage] = React.useState("es");
   const [context, setContext] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
-  const [result, setResult] = React.useState<ApiOk["transcription"] | null>(null);
+  const [result, setResult] = React.useState<Transcription | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     if (!file) {
-      push({ title: "Falta archivo", message: "Selecciona un audio para transcribir.", variant: "danger" });
+      push({
+        title: "Falta archivo",
+        message: "Selecciona un audio para transcribir.",
+        variant: "danger",
+      });
       return;
     }
 
@@ -47,35 +55,18 @@ export default function TranscribeFilePage() {
     setResult(null);
 
     try {
-      // 1) Subir a Vercel Blob via tu endpoint /api/upload
-      const fd = new FormData();
-      fd.append("file", file);
+      // 1) Subida a Vercel Blob (esto llama a /api/upload internamente)
+      const blob = await upload(file.name, file, {
+        access: "public",
+        handleUploadUrl: "/api/upload",
+      });
 
-      const upRes = await fetch("/api/upload", { method: "POST", body: fd });
-      const upRaw: unknown = await upRes.json().catch(() => null);
-
-      if (!upRes.ok) {
-        const msg =
-          isObject(upRaw) && typeof upRaw.error === "string"
-            ? upRaw.error
-            : "No se pudo subir el archivo.";
-        push({ title: "Error", message: msg, variant: "danger" });
-        return;
-      }
-
-      if (!isObject(upRaw) || upRaw.ok !== true || typeof upRaw.url !== "string") {
-        push({ title: "Error", message: "Respuesta inválida del servidor (upload).", variant: "danger" });
-        return;
-      }
-
-      const uploadedUrl = upRaw.url;
-
-      // 2) Llamar a /api/transcribe/file con JSON (NO mandamos el audio)
+      // 2) Pedir transcripción al backend SIN mandar el audio (solo URL)
       const res = await fetch("/api/transcribe/file", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          fileUrl: uploadedUrl,
+          fileUrl: blob.url,
           filename: file.name,
           mimeType: file.type || "application/octet-stream",
           language,
@@ -83,24 +74,37 @@ export default function TranscribeFilePage() {
         }),
       });
 
-      const data: unknown = await res.json().catch(() => null);
+      // Si el servidor devuelve HTML o texto, no petamos: lo leemos como text()
+      const rawText = await res.text();
+      const data: unknown = rawText ? (() => {
+        try { return JSON.parse(rawText); } catch { return null; }
+      })() : null;
 
       if (!res.ok) {
-        const msg =
-          isObject(data) && typeof data.error === "string"
-            ? data.error
-            : "No se pudo transcribir.";
-        push({ title: "Error", message: msg, variant: "danger" });
+        push({
+          title: "Error",
+          message: data ? pickErrorMessage(data, rawText || "No se pudo transcribir.") : (rawText || "No se pudo transcribir."),
+          variant: "danger",
+        });
         return;
       }
 
-      if (!isObject(data) || data.ok !== true || !isObject(data.transcription)) {
-        push({ title: "Error", message: "Respuesta inválida del servidor (no JSON válido).", variant: "danger" });
+      if (!data || !isObject(data) || data.ok !== true || !isObject(data.transcription)) {
+        push({
+          title: "Error",
+          message: "Respuesta inválida del servidor (no JSON).",
+          variant: "danger",
+        });
         return;
       }
 
-      setResult(data.transcription as ApiOk["transcription"]);
-      push({ title: "Transcripción lista ✅", message: "Guardada en tu historial.", variant: "success" });
+      const t = data.transcription as Transcription;
+      setResult(t);
+      push({
+        title: "Transcripción lista ✅",
+        message: "Guardada en tu historial.",
+        variant: "success",
+      });
     } catch (err) {
       push({
         title: "Error",
@@ -126,7 +130,9 @@ export default function TranscribeFilePage() {
 
       <form onSubmit={onSubmit} className="mt-6 grid gap-4">
         <div className="grid gap-2">
-          <label className="label" htmlFor="file">Archivo de audio</label>
+          <label className="label" htmlFor="file">
+            Archivo de audio
+          </label>
           <input
             id="file"
             name="file"
