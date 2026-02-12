@@ -6,34 +6,32 @@ export type WhisperTranscribeResult = {
   language: string;
 };
 
-type WhisperOk = {
+type WhisperServiceOk = {
   ok: true;
   text: string;
   durationSec: number;
-  language: string;
+  language?: string;
 };
 
-type WhisperErr = {
+type WhisperServiceErr = {
   ok: false;
   detail?: string;
-  error?: string;
 };
 
 function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null;
 }
 
-function isWhisperOk(v: unknown): v is WhisperOk {
+function isWhisperOk(v: unknown): v is WhisperServiceOk {
   return (
     isObject(v) &&
     v.ok === true &&
     typeof v.text === "string" &&
-    typeof v.durationSec === "number" &&
-    typeof v.language === "string"
+    typeof v.durationSec === "number"
   );
 }
 
-function isWhisperErr(v: unknown): v is WhisperErr {
+function isWhisperErr(v: unknown): v is WhisperServiceErr {
   return isObject(v) && v.ok === false;
 }
 
@@ -53,57 +51,49 @@ export class WhisperHttpAdapter {
   }): Promise<WhisperTranscribeResult> {
     const fd = new FormData();
 
-    // ✅ Buffer -> Uint8Array (válido como File/BlobPart en Node)
-    const bytes = Uint8Array.from(input.fileBuffer);
+    // ✅ Buffer -> ArrayBuffer REAL (evita ArrayBufferLike/SharedArrayBuffer)
+    const ab = input.fileBuffer.buffer.slice(
+      input.fileBuffer.byteOffset,
+      input.fileBuffer.byteOffset + input.fileBuffer.byteLength
+    ) as ArrayBuffer;
 
-    // ✅ Creamos File (evita el typing raro de BlobPart)
-    const file = new File([bytes], input.filename, { type: input.mimeType });
+    const blob = new Blob([ab], { type: input.mimeType });
 
-    fd.append("file", file);
+    fd.append("file", blob, input.filename);
     fd.append("language", input.language);
     if (input.context) fd.append("context", input.context);
 
-    const controller = new AbortController();
-    const timeoutMs = 2 * 60_000;
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const res = await fetch(`${this.baseUrl}/transcribe/file`, {
+      method: "POST",
+      body: fd,
+    });
 
-    let res: Response;
-    try {
-      res = await fetch(`${this.baseUrl}/transcribe/file`, {
-        method: "POST",
-        body: fd,
-        signal: controller.signal,
-      });
-    } catch (e) {
-      throw new Error(
-        `Whisper service unreachable: ${e instanceof Error ? e.message : "fetch failed"}`
-      );
-    } finally {
-      clearTimeout(timeout);
-    }
+    const raw = await res.text();
 
     if (!res.ok) {
-      const txt = await res.text().catch(() => "");
-      throw new Error(`Whisper service error: ${res.status} ${txt || "(sin body)"}`);
+      throw new Error(`Whisper service error: ${res.status} ${raw}`);
     }
 
-    const ct = res.headers.get("content-type") || "";
-    if (!ct.includes("application/json")) {
-      const txt = await res.text().catch(() => "");
-      throw new Error(`Whisper respondió no-JSON: ${txt || "(vacío)"}`);
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      throw new Error(`Whisper service: respuesta no JSON: ${raw.slice(0, 200)}`);
     }
 
-    const data: unknown = await res.json().catch(() => null);
-
-    if (isWhisperOk(data)) {
-      return { text: data.text, durationSec: data.durationSec, language: data.language };
+    if (isWhisperOk(parsed)) {
+      return {
+        text: parsed.text,
+        durationSec: parsed.durationSec,
+        language: typeof parsed.language === "string" ? parsed.language : input.language,
+      };
     }
 
-    if (isWhisperErr(data)) {
-      const msg = data.error || data.detail || "Whisper transcription failed";
-      throw new Error(msg);
+    if (isWhisperErr(parsed)) {
+      const msg = typeof parsed.detail === "string" ? parsed.detail : "Fallo en Whisper";
+      throw new Error(`Whisper transcription failed: ${msg}`);
     }
 
-    throw new Error("Respuesta inválida del servicio Whisper (JSON inesperado).");
+    throw new Error("Whisper service: formato de respuesta inválido");
   }
 }

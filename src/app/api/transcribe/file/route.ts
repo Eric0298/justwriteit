@@ -1,3 +1,4 @@
+// src/app/api/transcribe/file/route.ts
 import { auth } from "@/../auth";
 import { transcribeFileSchema } from "@/lib/validators/transcribe";
 import { getTranscriptionAdapter } from "@/lib/transcription/adapter";
@@ -9,162 +10,100 @@ import {
 } from "@/lib/queries/transcriptions";
 import { getUserById } from "@/lib/queries/users";
 import { notifyTranscriptionCompleted } from "@/lib/n8n";
-import { parseBuffer } from "music-metadata";
 
 export const runtime = "nodejs";
 
 const MAX_BYTES = 25 * 1024 * 1024; // 25MB
-const MAX_DURATION_SEC = 30 * 60; // 30 min
 
-const ALLOWED_MIME = new Set([
-  "audio/mpeg",
-  "audio/mp3",
-  "audio/wav",
-  "audio/x-wav",
-  "audio/webm",
-  "audio/ogg",
-  "audio/mp4",
-  "audio/x-m4a",
-  "audio/aac",
-]);
-
-function normalizeMime(fileType: string) {
-  const t = (fileType || "").toLowerCase().trim();
-  if (t === "audio/mp3") return "audio/mpeg";
-  return t;
-}
-
-async function getDurationSecondsSafe(input: {
-  buffer: Buffer;
-  mimeType: string;
+type Body = {
+  fileUrl: string;
   filename: string;
-}): Promise<number | null> {
-  try {
-    const meta = await parseBuffer(input.buffer, input.mimeType || undefined, {
-      duration: true,
-    });
+  mimeType: string;
+  language: string;
+  context?: string;
+};
 
-    const d = meta.format.duration;
-    if (!d || !Number.isFinite(d) || d <= 0) return null;
-
-    return Math.round(d);
-  } catch (err) {
-    console.warn("No se pudo detectar duración:", input.filename, err);
-    return null;
-  }
+function isBody(v: unknown): v is Body {
+  if (!v || typeof v !== "object") return false;
+  const o = v as Record<string, unknown>;
+  return (
+    typeof o.fileUrl === "string" &&
+    typeof o.filename === "string" &&
+    typeof o.mimeType === "string" &&
+    typeof o.language === "string"
+  );
 }
 
 export async function POST(req: Request) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return Response.json({ ok: false, error: "No autenticado." }, { status: 401 });
+  }
+
+  const body: unknown = await req.json().catch(() => null);
+  if (!isBody(body)) {
+    return Response.json({ ok: false, error: "Body inválido." }, { status: 400 });
+  }
+
+  // Validación de language/context con tu schema actual
+  const parsed = transcribeFileSchema.safeParse({
+    language: body.language,
+    context: body.context ?? "",
+  });
+
+  if (!parsed.success) {
+    return Response.json(
+      { ok: false, error: "Datos inválidos.", details: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+
+  // 1) Creamos registro "processing"
+  const row = await createTranscription({
+    userId: session.user.id,
+    type: "file",
+    language: parsed.data.language,
+    status: "processing",
+    audioFilename: body.filename,
+  });
+
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return Response.json({ ok: false, error: "No autenticado." }, { status: 401 });
+    // 2) Descargamos desde Vercel Blob (no hay payload limit aquí)
+    const fileRes = await fetch(body.fileUrl);
+    if (!fileRes.ok) {
+      throw new Error(`No se pudo descargar el archivo (HTTP ${fileRes.status}).`);
     }
 
-    const formData = await req.formData();
+    const ab = await fileRes.arrayBuffer();
+    if (ab.byteLength <= 0) throw new Error("Archivo vacío.");
+    if (ab.byteLength > MAX_BYTES) throw new Error("Archivo demasiado grande (máx 25MB).");
 
-    const language = String(formData.get("language") ?? "");
-    const context = String(formData.get("context") ?? "");
+    const buffer = Buffer.from(ab);
 
-    const parsed = transcribeFileSchema.safeParse({ language, context });
-    if (!parsed.success) {
-      return Response.json(
-        { ok: false, error: "Datos inválidos.", details: parsed.error.flatten() },
-        { status: 400 }
-      );
-    }
-
-    const file = formData.get("file");
-    if (!(file instanceof File)) {
-      return Response.json({ ok: false, error: "Falta el archivo." }, { status: 400 });
-    }
-
-    if (file.size <= 0) {
-      return Response.json({ ok: false, error: "El archivo está vacío." }, { status: 400 });
-    }
-
-    if (file.size > MAX_BYTES) {
-      return Response.json(
-        { ok: false, error: "Archivo demasiado grande (máx 25MB)." },
-        { status: 413 }
-      );
-    }
-
-    const mime = normalizeMime(file.type);
-    if (mime && !ALLOWED_MIME.has(mime)) {
-      return Response.json(
-        { ok: false, error: `Tipo no permitido: ${file.type}` },
-        { status: 415 }
-      );
-    }
-
-    // 1) Leemos buffer UNA vez
-    const buffer = Buffer.from(await file.arrayBuffer());
-
-    // 2) Creamos registro "processing" (ahora dentro del try global)
-    const row = await createTranscription({
-      userId: session.user.id,
-      type: "file",
-      language: parsed.data.language,
-      status: "processing",
-      audioFilename: file.name,
-    });
-
-    // 3) Validación de DURACIÓN (máx 30 min)
-    const durationSec = await getDurationSecondsSafe({
-      buffer,
-      mimeType: mime || "application/octet-stream",
-      filename: file.name,
-    });
-
-    if (durationSec !== null && durationSec > MAX_DURATION_SEC) {
-      await updateTranscriptionStatus({
-        id: row.id,
-        userId: session.user.id,
-        status: "failed",
-      });
-
-      return Response.json(
-        {
-          ok: false,
-          error: `Audio demasiado largo: ${durationSec}s. Máximo permitido: ${MAX_DURATION_SEC}s (30 min).`,
-        },
-        { status: 413 }
-      );
-    }
-
-    // 4) Ejecutamos transcripción con adapter
+    // 3) Transcribir
     const adapter = getTranscriptionAdapter();
-
     const out = await adapter.transcribeFile({
       fileBuffer: buffer,
-      filename: file.name,
-      mimeType: mime || "application/octet-stream",
+      filename: body.filename,
+      mimeType: body.mimeType || "application/octet-stream",
       language: parsed.data.language,
       context: parsed.data.context || undefined,
     });
 
-    // 5) Guardamos resultado en BD (done)
-    const finalDuration =
-      durationSec !== null
-        ? durationSec
-        : out.durationSec
-        ? Math.round(out.durationSec)
-        : null;
-
+    // 4) Guardar
     const saved = await setTranscriptText({
       id: row.id,
       userId: session.user.id,
       transcriptText: out.text,
-      duration: finalDuration,
-      audioFilename: file.name,
+      duration: out.durationSec ? Math.round(out.durationSec) : null,
+      audioFilename: body.filename,
     });
 
+    // 5) Notificar (no bloqueante)
     try {
       const user = await getUserById(session.user.id);
       if (user && saved) {
         const baseUrl = process.env.APP_URL ?? "http://localhost:3000";
-
         const notifyRes = await notifyTranscriptionCompleted({
           transcriptionId: saved.id,
           userEmail: user.email,
@@ -189,8 +128,14 @@ export async function POST(req: Request) {
 
     return Response.json({ ok: true, transcription: saved });
   } catch (e) {
-     return Response.json(
-      { ok: false, error: e instanceof Error ? e.message : "Error inesperado" },
+    await updateTranscriptionStatus({
+      id: row.id,
+      userId: session.user.id,
+      status: "failed",
+    });
+
+    return Response.json(
+      { ok: false, error: e instanceof Error ? e.message : "Error procesando transcripción." },
       { status: 500 }
     );
   }

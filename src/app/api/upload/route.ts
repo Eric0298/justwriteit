@@ -32,17 +32,12 @@ export async function POST(request: Request) {
       body,
       request,
 
-      onBeforeGenerateToken: async () => {
-        return {
-          allowedContentTypes: ALLOWED_AUDIO_TYPES,
-          maximumSizeInBytes: MAX_BYTES,
-          addRandomSuffix: true,
-
-          tokenPayload: JSON.stringify({
-            userId: session.user.id,
-          }),
-        };
-      },
+      onBeforeGenerateToken: async () => ({
+  allowedContentTypes: ALLOWED_AUDIO_TYPES,
+  maximumSizeInBytes: MAX_BYTES,
+  addRandomSuffix: true,
+  tokenPayload: JSON.stringify({ userId: session.user.id }),
+}),
 
       onUploadCompleted: async ({
         blob,
