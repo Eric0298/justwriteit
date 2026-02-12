@@ -189,10 +189,9 @@ export async function POST(req: Request) {
 
     return Response.json({ ok: true, transcription: saved });
   } catch (e) {
-    // ✅ Nunca HTML: siempre JSON
-    const msg = e instanceof Error ? e.message : "Error procesando transcripción.";
-    console.error("api/transcribe/file failed:", e);
-
-    return Response.json({ ok: false, error: msg }, { status: 500 });
+     return Response.json(
+      { ok: false, error: e instanceof Error ? e.message : "Error inesperado" },
+      { status: 500 }
+    );
   }
 }
