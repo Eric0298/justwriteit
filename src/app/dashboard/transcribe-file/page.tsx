@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { upload } from "@vercel/blob/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
+import { TranscriptionProgress } from "@/components/transcribe/TranscriptionProgress";
+import { useUploadProgress } from "@/hooks/useUploadProgress";
 
 type ApiOk = {
   ok: true;
@@ -22,14 +23,7 @@ type ApiOk = {
   };
 };
 
-type ApiErr = { ok: false; error: string };
-
-async function safeReadJson(res: Response) {
-  const ct = res.headers.get("content-type") || "";
-  if (ct.includes("application/json")) return res.json();
-  const text = await res.text();
-  return { ok: false, error: text || `Respuesta no JSON (status ${res.status})` };
-}
+type ApiErr = { ok: false; error: string; details?: unknown };
 
 export default function TranscribeFilePage() {
   const { push } = useToast();
@@ -37,10 +31,11 @@ export default function TranscribeFilePage() {
   const [file, setFile] = React.useState<File | null>(null);
   const [language, setLanguage] = React.useState("es");
   const [context, setContext] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(false);
   const [result, setResult] = React.useState<ApiOk["transcription"] | null>(null);
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const uploader = useUploadProgress();
+
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     if (!file) {
@@ -48,47 +43,35 @@ export default function TranscribeFilePage() {
       return;
     }
 
-    setIsLoading(true);
     setResult(null);
 
     try {
-      // 1) Subir a Vercel Blob desde el cliente (evita límite 4.5MB)
-      const blob = await upload(file.name, file, {
-        access: "public",
-        handleUploadUrl: "/api/upload",
-      });
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("language", language);
+      fd.append("context", context);
 
-      // 2) Pedir transcripción al backend con blobUrl (JSON pequeñito)
-      const res = await fetch("/api/transcribe/file", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          language,
-          context,
-          blobUrl: blob.url,
-          originalName: file.name,
-          mimeType: file.type,
-        }),
-      });
+      const { status, data } = await uploader.postForm<ApiOk | ApiErr>("/api/transcribe/file", fd);
 
-      const data = (await safeReadJson(res)) as ApiOk | ApiErr;
-
-      if (!res.ok || !("ok" in data) || !data.ok) {
-        const msg = "error" in data ? data.error : "No se pudo transcribir.";
+      if (status < 200 || status >= 300 || !data || (data as ApiErr).ok === false) {
+        uploader.fail();
+        const msg = (data as ApiErr)?.error ?? "No se pudo transcribir.";
         push({ title: "Error", message: msg, variant: "danger" });
         return;
       }
 
-      setResult(data.transcription);
+      await uploader.finishOk();
+
+      const okData = data as ApiOk;
+      setResult(okData.transcription);
       push({ title: "Transcripción lista ✅", message: "Guardada en tu historial.", variant: "success" });
     } catch (err) {
+      uploader.fail();
       push({
         title: "Error",
         message: err instanceof Error ? err.message : "Fallo inesperado.",
         variant: "danger",
       });
-    } finally {
-      setIsLoading(false);
     }
   }
 
@@ -97,11 +80,21 @@ export default function TranscribeFilePage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Transcribir archivo</h1>
-          <p className="mt-2 text-sm text-muted">
-            Sube un audio, elige idioma y genera una transcripción.
-          </p>
+          <p className="mt-2 text-sm text-muted">Sube un audio, elige idioma y genera una transcripción.</p>
         </div>
         <Badge>{result?.status ?? "—"}</Badge>
+      </div>
+
+      <div className="mt-6">
+        <TranscriptionProgress
+          phase={uploader.phase}
+          progress={uploader.progress}
+          isBusy={uploader.isBusy}
+          onCancel={() => {
+            uploader.cancel();
+            push({ title: "Cancelado", message: "Se canceló la transcripción.", variant: "danger" });
+          }}
+        />
       </div>
 
       <form onSubmit={onSubmit} className="mt-6 grid gap-4">
@@ -115,6 +108,7 @@ export default function TranscribeFilePage() {
             className="input"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             aria-label="Seleccionar archivo de audio"
+            disabled={uploader.isBusy}
           />
           <p className="hint">Formatos comunes: mp3, wav, m4a, ogg, webm. Máximo 25MB.</p>
         </div>
@@ -130,6 +124,7 @@ export default function TranscribeFilePage() {
             { value: "ca", label: "Catalán" },
             { value: "fr", label: "Francés" },
           ]}
+          disabled={uploader.isBusy}
         />
 
         <Input
@@ -138,11 +133,12 @@ export default function TranscribeFilePage() {
           placeholder="Ej: reunión de trabajo sobre presupuesto..."
           value={context}
           onChange={(e) => setContext(e.target.value)}
-          hint="Esto será útil al conectar un proveedor real."
+          hint="Esto ayudará al proveedor de transcripción (si se usa)."
+          disabled={uploader.isBusy}
         />
 
-        <Button type="submit" isLoading={isLoading}>
-          {isLoading ? "Transcribiendo..." : "Transcribir"}
+        <Button type="submit" isLoading={uploader.isBusy} disabled={uploader.isBusy}>
+          {uploader.isBusy ? "Procesando…" : "Transcribir"}
         </Button>
       </form>
 
