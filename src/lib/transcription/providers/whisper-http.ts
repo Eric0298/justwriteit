@@ -6,35 +6,46 @@ export type WhisperTranscribeResult = {
   language: string;
 };
 
-type WhisperServiceOk = {
+type WhisperOk = {
   ok: true;
   text: string;
   durationSec: number;
-  language?: string;
+  language: string;
 };
 
-type WhisperServiceErr = {
+type WhisperErr = {
   ok: false;
   detail?: string;
+  error?: string;
 };
 
 function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null;
 }
 
-function isWhisperOk(v: unknown): v is WhisperServiceOk {
+function isWhisperOk(v: unknown): v is WhisperOk {
   return (
     isObject(v) &&
     v.ok === true &&
     typeof v.text === "string" &&
-    typeof v.durationSec === "number"
+    typeof v.durationSec === "number" &&
+    typeof v.language === "string"
   );
 }
 
-function isWhisperErr(v: unknown): v is WhisperServiceErr {
+function isWhisperErr(v: unknown): v is WhisperErr {
   return isObject(v) && v.ok === false;
 }
 
+function bufferToArrayBuffer(buf: Buffer): ArrayBuffer {
+  // Opción 1: Crear un nuevo ArrayBuffer y copiar los datos
+  const arrayBuffer = new ArrayBuffer(buf.byteLength);
+  const view = new Uint8Array(arrayBuffer);
+  for (let i = 0; i < buf.byteLength; i++) {
+    view[i] = buf[i];
+  }
+  return arrayBuffer;
+}
 export class WhisperHttpAdapter {
   private baseUrl: string;
 
@@ -51,12 +62,7 @@ export class WhisperHttpAdapter {
   }): Promise<WhisperTranscribeResult> {
     const fd = new FormData();
 
-    // ✅ Buffer -> ArrayBuffer REAL (evita ArrayBufferLike/SharedArrayBuffer)
-    const ab = input.fileBuffer.buffer.slice(
-      input.fileBuffer.byteOffset,
-      input.fileBuffer.byteOffset + input.fileBuffer.byteLength
-    ) as ArrayBuffer;
-
+    const ab = bufferToArrayBuffer(input.fileBuffer);
     const blob = new Blob([ab], { type: input.mimeType });
 
     fd.append("file", blob, input.filename);
@@ -66,34 +72,39 @@ export class WhisperHttpAdapter {
     const res = await fetch(`${this.baseUrl}/transcribe/file`, {
       method: "POST",
       body: fd,
+      // IMPORTANTE: no pongas content-type aquí; FormData lo gestiona solo.
     });
 
-    const raw = await res.text();
+    const rawText = await res.text();
 
     if (!res.ok) {
-      throw new Error(`Whisper service error: ${res.status} ${raw}`);
+      // Railway/uvicorn a veces devuelve HTML o texto plano
+      throw new Error(`Whisper service error: ${res.status} ${rawText}`);
     }
 
-    let parsed: unknown;
+    let data: unknown = null;
     try {
-      parsed = JSON.parse(raw);
+      data = rawText ? JSON.parse(rawText) : null;
     } catch {
-      throw new Error(`Whisper service: respuesta no JSON: ${raw.slice(0, 200)}`);
+      throw new Error("Whisper service devolvió una respuesta no JSON.");
     }
 
-    if (isWhisperOk(parsed)) {
+    if (isWhisperOk(data)) {
       return {
-        text: parsed.text,
-        durationSec: parsed.durationSec,
-        language: typeof parsed.language === "string" ? parsed.language : input.language,
+        text: data.text,
+        durationSec: data.durationSec,
+        language: data.language,
       };
     }
 
-    if (isWhisperErr(parsed)) {
-      const msg = typeof parsed.detail === "string" ? parsed.detail : "Fallo en Whisper";
-      throw new Error(`Whisper transcription failed: ${msg}`);
+    if (isWhisperErr(data)) {
+      const msg =
+        (typeof data.error === "string" && data.error) ||
+        (typeof data.detail === "string" && data.detail) ||
+        "Whisper transcription failed";
+      throw new Error(msg);
     }
 
-    throw new Error("Whisper service: formato de respuesta inválido");
+    throw new Error("Respuesta inválida del servicio Whisper.");
   }
 }

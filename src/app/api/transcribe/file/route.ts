@@ -68,17 +68,26 @@ export async function POST(req: Request) {
   });
 
   try {
-    // 2) Descargamos desde Vercel Blob (no hay payload limit aquí)
-    const fileRes = await fetch(body.fileUrl);
-    if (!fileRes.ok) {
-      throw new Error(`No se pudo descargar el archivo (HTTP ${fileRes.status}).`);
-    }
+    // 2) Descargamos desde Vercel Blob
+const fileRes = await fetch(body.fileUrl, { cache: "no-store" });
+if (!fileRes.ok) {
+  throw new Error(`No se pudo descargar el archivo (HTTP ${fileRes.status}).`);
+}
 
-    const ab = await fileRes.arrayBuffer();
-    if (ab.byteLength <= 0) throw new Error("Archivo vacío.");
-    if (ab.byteLength > MAX_BYTES) throw new Error("Archivo demasiado grande (máx 25MB).");
+// Si el servidor manda content-length, validamos antes
+const lenHeader = fileRes.headers.get("content-length");
+if (lenHeader) {
+  const len = Number(lenHeader);
+  if (Number.isFinite(len) && len > MAX_BYTES) {
+    throw new Error("Archivo demasiado grande (máx 25MB).");
+  }
+}
 
-    const buffer = Buffer.from(ab);
+const ab = await fileRes.arrayBuffer();
+if (ab.byteLength <= 0) throw new Error("Archivo vacío.");
+if (ab.byteLength > MAX_BYTES) throw new Error("Archivo demasiado grande (máx 25MB).");
+
+const buffer = Buffer.from(ab);
 
     // 3) Transcribir
     const adapter = getTranscriptionAdapter();
