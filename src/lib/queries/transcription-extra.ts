@@ -25,3 +25,20 @@ export async function deleteUserTranscription(input: { userId: string; id: strin
 
   return Boolean(res.rows[0]);
 }
+export async function updateTranscriptionTitle(input: {
+  userId: string;
+  id: string;
+  newTitle: string;
+}): Promise<boolean> {
+  const res = await query<{ id: string }>(
+    `
+    update transcriptions
+    set audio_filename = $1
+    where id = $2 and user_id = $3
+    returning id
+    `,
+    [input.newTitle, input.id, input.userId]
+  );
+
+  return Boolean(res.rows[0]);
+}

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { formatDateTime, clampText } from "@/lib/format";
 import { redirect } from "next/navigation";
 import { HistoryListActions } from "@/components/history/HistoryListActions";
+import { HistoryTitleEdit } from "@/components/history/HistoryTitleEdit";
 
 const PAGE_SIZE = 10;
 
@@ -63,22 +64,27 @@ export default async function HistoryPage({
         <ul className="mt-6 grid gap-3">
           {rows.map((t) => {
             const preview = clampText(t.transcript_text ?? "(sin texto)", 160);
+            const displayTitle = t.audio_filename || `Transcripción ${t.type}`;
 
             return (
               <li key={t.id} className="rounded-[var(--radius-lg)] border p-3 sm:p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   {/* Contenido principal */}
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-col gap-2">
+                      {/* Título editable */}
+                      <HistoryTitleEdit id={t.id} currentTitle={displayTitle} />
+                      
+                      {/* Enlace a detalle debajo del título */}
                       <Link
                         href={`/dashboard/history/${t.id}`}
-                        className="font-medium underline underline-offset-4 hover:text-accent"
+                        className="text-xs text-muted hover:text-accent hover:underline"
                       >
-                        {t.audio_filename ? t.audio_filename : `Transcripción ${t.type}`}
+                        Ver detalles →
                       </Link>
                     </div>
 
-                    <p className="mt-1 text-xs text-muted">
+                    <p className="mt-2 text-xs text-muted">
                       {formatDateTime(t.created_at)} · Idioma: {t.language}
                     </p>
 
