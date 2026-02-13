@@ -112,7 +112,7 @@ const buffer = Buffer.from(ab);
     try {
       const user = await getUserById(session.user.id);
       if (user && saved) {
-        const baseUrl = process.env.APP_URL ?? "http://localhost:3000";
+        const baseUrl = process.env.APP_URL || process.env.NEXTAUTH_URL || "https://justwriteit-i6j1.vercel.app";
         const notifyRes = await notifyTranscriptionCompleted({
           transcriptionId: saved.id,
           userEmail: user.email,
