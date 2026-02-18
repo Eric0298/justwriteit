@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import "tailwindcss";
-@reference "tailwindcss";
-
 /* =========================================================
    THEME TOKENS (Ice Blue / Calm)
    - Fondos: blancos/negros "suaves" (azulados)
@@ -43,12 +40,13 @@
   --glow-danger: 0 0 0 4px rgba(239, 68, 68, 0.18);
 
   /* Background gradients */
-  --bg-grad-1: linear-gradient(135deg, rgba(56,189,248,.10), rgba(99,102,241,.08));
-  --bg-grad-2: radial-gradient(900px 500px at 30% -10%, rgba(56,189,248,.16), transparent 60%),
-               radial-gradient(900px 500px at 90% 0%, rgba(99,102,241,.10), transparent 60%);
+  --bg-grad-1: linear-gradient(135deg, rgba(56, 189, 248, .10), rgba(99, 102, 241, .08));
+  --bg-grad-2:
+    radial-gradient(900px 500px at 30% -10%, rgba(56, 189, 248, .16), transparent 60%),
+    radial-gradient(900px 500px at 90% 0%, rgba(99, 102, 241, .10), transparent 60%);
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial,
-    "Apple Color Emoji","Segoe UI Emoji";
+    "Apple Color Emoji", "Segoe UI Emoji";
 }
 
 .dark {
@@ -65,24 +63,20 @@
   --accent-fg: 8 12 20;
   --accent-2: 165 180 252;       /* indigo-300 */
 
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.25);
-  --shadow-md: 0 20px 60px rgba(0,0,0,0.40);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 20px 60px rgba(0, 0, 0, 0.40);
 
   --glow-accent: 0 0 0 4px rgba(125, 211, 252, 0.16);
   --glow-danger: 0 0 0 4px rgba(239, 68, 68, 0.18);
 
-  --bg-grad-1: linear-gradient(135deg, rgba(125,211,252,.10), rgba(165,180,252,.08));
-  --bg-grad-2: radial-gradient(900px 500px at 25% -10%, rgba(125,211,252,.14), transparent 60%),
-               radial-gradient(900px 500px at 90% 0%, rgba(165,180,252,.10), transparent 60%);
+  --bg-grad-1: linear-gradient(135deg, rgba(125, 211, 252, .10), rgba(165, 180, 252, .08));
+  --bg-grad-2:
+    radial-gradient(900px 500px at 25% -10%, rgba(125, 211, 252, .14), transparent 60%),
+    radial-gradient(900px 500px at 90% 0%, rgba(165, 180, 252, .10), transparent 60%);
 }
 
-html {
-  color-scheme: light;
-}
-
-html.dark {
-  color-scheme: dark;
-}
+html { color-scheme: light; }
+html.dark { color-scheme: dark; }
 
 body {
   background: rgb(var(--bg));
@@ -105,6 +99,23 @@ body::before {
   outline: none;
   box-shadow: var(--glow-accent);
   border-radius: 10px;
+}
+
+/* =========================================================
+   UTILITIES (custom)
+   IMPORTANT: utilities are safe to @apply
+========================================================= */
+@layer utilities {
+  .text-fg { color: rgb(var(--fg)); }
+  .text-muted { color: rgb(var(--muted)); }
+
+  .bg-bg { background-color: rgb(var(--bg)); }
+  .bg-card { background-color: rgb(var(--card)); }
+
+  .border-border { border-color: rgb(var(--border)); }
+
+  .text-danger { color: rgb(var(--danger)); }
+  .bg-danger { background-color: rgb(var(--danger)); }
 }
 
 /* =========================================================
@@ -177,7 +188,11 @@ body::before {
 
   .btn-primary {
     color: rgb(var(--primary-fg));
-    background: linear-gradient(135deg, rgba(var(--accent), 0.95), rgba(var(--accent-2), 0.90));
+    background: linear-gradient(
+      135deg,
+      rgba(var(--accent), 0.95),
+      rgba(var(--accent-2), 0.90)
+    );
     box-shadow: 0 8px 24px rgba(56, 189, 248, 0.20);
   }
 
@@ -202,15 +217,6 @@ body::before {
 
   .btn-ghost:active {
     background: rgba(var(--fg), 0.06);
-  }
-
-  /* Danger variant helper (you also use bg-danger in Button.tsx) */
-  .bg-danger {
-    background: rgb(var(--danger));
-  }
-
-  .text-danger {
-    color: rgb(var(--danger));
   }
 
   /* ---- INPUTS / SELECT ---- */
@@ -271,22 +277,13 @@ body::before {
 
   .nav-icon-active {
     border-color: rgba(var(--accent), 0.45);
-    background: linear-gradient(135deg, rgba(var(--accent), 0.22), rgba(var(--accent-2), 0.14));
+    background: linear-gradient(
+      135deg,
+      rgba(var(--accent), 0.22),
+      rgba(var(--accent-2), 0.14)
+    );
     color: rgb(var(--fg));
     box-shadow: 0 10px 24px rgba(56, 189, 248, 0.14);
-  }
-
-  /* ---- BADGE helpers (you already have Badge component classes) ---- */
-  .text-muted {
-    color: rgb(var(--muted));
-  }
-
-  .text-fg {
-    color: rgb(var(--fg));
-  }
-
-  .bg-bg {
-    background: rgb(var(--bg));
   }
 
   /* ---- Dialog default polish ---- */
@@ -298,6 +295,8 @@ body::before {
     background: rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(6px);
   }
+
+  /* ---- AUTH ---- */
   .auth-shell {
     @apply min-h-[calc(100vh-3.5rem)] flex items-center;
     background:
@@ -310,16 +309,15 @@ body::before {
   .auth-card {
     @apply rounded-[var(--radius-lg)] border;
     border-color: rgba(var(--accent), 0.14);
-    background:
-      linear-gradient(180deg, rgba(var(--card), 0.88), rgba(var(--card), 0.98));
+    background: linear-gradient(180deg, rgba(var(--card), 0.88), rgba(var(--card), 0.98));
     box-shadow: var(--shadow-md);
     backdrop-filter: blur(10px);
   }
 
   .auth-badge {
     border: 1px solid rgba(var(--accent), 0.20);
-    background: linear-gradient(135deg, rgba(var(--accent),0.18), rgba(var(--card),0.90));
-    box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    background: linear-gradient(135deg, rgba(var(--accent), 0.18), rgba(var(--card), 0.90));
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
   }
 
   .input-icon {
@@ -329,22 +327,27 @@ body::before {
   .link-soft {
     @apply font-medium underline underline-offset-4 transition;
   }
+
   .link-soft:hover {
     color: rgb(var(--accent));
   }
 
   .alert {
     @apply rounded-[var(--radius-lg)] border p-3 text-sm;
-    background: linear-gradient(180deg, rgba(var(--card),0.92), rgba(var(--card),0.98));
+    background: linear-gradient(180deg, rgba(var(--card), 0.92), rgba(var(--card), 0.98));
   }
+
   .alert-danger {
     border-color: rgba(var(--danger), 0.45);
     color: rgb(var(--danger));
   }
+
   .alert-warn {
     border-color: rgba(var(--accent), 0.25);
     color: rgb(var(--fg));
   }
+
+  /* ---- APP SHELL / LANDING ---- */
   .app-shell {
     @apply relative min-h-dvh;
   }
@@ -368,6 +371,7 @@ body::before {
   .app-brand {
     @apply inline-flex items-center gap-2 rounded-[var(--radius-md)] px-2 py-1 transition;
   }
+
   .app-brand:hover {
     background: rgba(var(--accent), 0.07);
   }
@@ -378,17 +382,20 @@ body::before {
     border: 1px solid rgba(var(--accent), 0.12);
     background: rgba(var(--card), 0.55);
   }
+
   .nav-pill:hover {
     color: rgb(var(--fg));
     background: rgba(var(--accent), 0.08);
     border-color: rgba(var(--accent), 0.20);
   }
+
   .nav-pill-primary {
     color: rgb(var(--accent-fg));
     background: linear-gradient(135deg, rgba(var(--accent), 0.95), rgba(var(--accent), 0.75));
     border-color: rgba(var(--accent), 0.35);
-    box-shadow: 0 10px 22px rgba(0,0,0,.10);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, .10);
   }
+
   .nav-pill-primary:hover {
     filter: brightness(1.03);
   }
@@ -399,9 +406,11 @@ body::before {
     background: rgba(var(--bg), 0.75);
     backdrop-filter: blur(10px);
   }
+
   .footer-link {
     @apply underline underline-offset-4 transition;
   }
+
   .footer-link:hover {
     color: rgb(var(--accent));
   }
