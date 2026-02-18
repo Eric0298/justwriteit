@@ -1,28 +1,24 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@reference "tailwindcss";
 
 /* =========================================================
    THEME TOKENS (Ice Blue / Calm)
-   - Fondos: blancos/negros "suaves" (azulados)
-   - Color: en bordes, acentos, hover, glow
-   - Mantiene light/dark con variables RGB
 ========================================================= */
 :root {
   /* Base surfaces */
-  --bg: 246 248 252;            /* ice white */
-  --fg: 15 23 42;               /* slate-900-ish */
-  --muted: 71 85 105;           /* slate-600-ish */
-  --border: 226 232 240;        /* slate-200-ish */
-  --card: 255 255 255;          /* true white but softened by overlays */
+  --bg: 246 248 252;
+  --fg: 15 23 42;
+  --muted: 71 85 105;
+  --border: 226 232 240;
+  --card: 255 255 255;
 
   /* Brand / accents (ice blue) */
-  --primary: 15 23 42;          /* deep slate */
+  --primary: 15 23 42;
   --primary-fg: 255 255 255;
 
-  --accent: 56 189 248;         /* sky-400 */
-  --accent-fg: 3 7 18;          /* near-black */
-  --accent-2: 99 102 241;       /* indigo-500 (secondary accent) */
+  --accent: 56 189 248;
+  --accent-fg: 3 7 18;
+  --accent-2: 99 102 241;
 
   --danger: 239 68 68;
 
@@ -50,18 +46,18 @@
 }
 
 .dark {
-  --bg: 8 12 20;                 /* deep blue-black */
-  --fg: 241 245 249;             /* slate-100-ish */
-  --muted: 148 163 184;          /* slate-400-ish */
-  --border: 30 41 59;            /* slate-800-ish */
-  --card: 10 15 26;              /* slightly lifted */
+  --bg: 8 12 20;
+  --fg: 241 245 249;
+  --muted: 148 163 184;
+  --border: 30 41 59;
+  --card: 10 15 26;
 
   --primary: 241 245 249;
   --primary-fg: 8 12 20;
 
-  --accent: 125 211 252;         /* sky-300 */
+  --accent: 125 211 252;
   --accent-fg: 8 12 20;
-  --accent-2: 165 180 252;       /* indigo-300 */
+  --accent-2: 165 180 252;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
   --shadow-md: 0 20px 60px rgba(0, 0, 0, 0.40);
@@ -103,7 +99,6 @@ body::before {
 
 /* =========================================================
    UTILITIES (custom)
-   IMPORTANT: utilities are safe to @apply
 ========================================================= */
 @layer utilities {
   .text-fg { color: rgb(var(--fg)); }
@@ -286,7 +281,7 @@ body::before {
     box-shadow: 0 10px 24px rgba(56, 189, 248, 0.14);
   }
 
-  /* ---- Dialog default polish ---- */
+  /* ---- Dialog ---- */
   dialog {
     border-color: rgb(var(--border));
   }
