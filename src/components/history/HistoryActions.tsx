@@ -84,6 +84,21 @@ export function HistoryActions({ id, transcriptText }: Props) {
         >
           Descargar .txt
         </a>
+        <a
+  href={`/api/transcriptions/${id}/download/vtt`}
+  className="btn btn-ghost"
+  aria-label="Descargar subtítulos VTT"
+>
+  Descargar .vtt
+</a>
+
+<a
+  href={`/api/transcriptions/${id}/download/srt`}
+  className="btn btn-ghost"
+  aria-label="Descargar subtítulos SRT"
+>
+  Descargar .srt
+</a>
 
         <Button
           type="button"
