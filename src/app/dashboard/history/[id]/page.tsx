@@ -85,9 +85,10 @@ export default async function HistoryDetailPage({
       </div>
 
       <TranscriptStudyView
-        transcriptText={row.transcript_text ?? ""}
-        segments={segments}
-      />
+  transcriptText={row.transcript_text ?? ""}
+  segments={segments}
+  audioUrl={row.audio_url}
+/>
     </Card>
   );
 }

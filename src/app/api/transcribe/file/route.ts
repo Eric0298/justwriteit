@@ -106,6 +106,7 @@ const buffer = Buffer.from(ab);
       transcriptText: out.text,
       duration: out.durationSec ? Math.round(out.durationSec) : null,
       audioFilename: body.filename,
+      audioUrl: body.fileUrl,
       segmentsJson: out.segments ? JSON.stringify(out.segments) : null,
     });
 

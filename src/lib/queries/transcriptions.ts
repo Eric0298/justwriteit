@@ -15,6 +15,7 @@ export type TranscriptionRow = {
   duration: number | null;
   transcript_text: string | null;
   segments: unknown | null;
+  audio_url: string | null;
   created_at: string;
 
   notification_status: NotificationStatus;
@@ -23,7 +24,7 @@ export type TranscriptionRow = {
 
 const SELECT_COLUMNS = `
   id, user_id, type, language, status,
-  audio_filename, duration, transcript_text, segments, created_at,
+  audio_filename,audio_url, duration, transcript_text, segments, created_at,
   notification_status, notification_error
 `;
 
@@ -82,7 +83,8 @@ export async function setTranscriptText(input: {
   transcriptText: string;
   duration?: number | null;
   audioFilename?: string | null;
- segmentsJson?: string | null; 
+  audioUrl?: string | null;        
+  segmentsJson?: string | null;    
 }): Promise<TranscriptionRow | null> {
   const res = await query<TranscriptionRow>(
     `
@@ -90,16 +92,18 @@ export async function setTranscriptText(input: {
     SET transcript_text = $1,
         duration = COALESCE($2, duration),
         audio_filename = COALESCE($3, audio_filename),
-        segments = COALESCE($4::jsonb, segments),
+        audio_url = COALESCE($4, audio_url),
+        segments = COALESCE($5::jsonb, segments),
         status = 'done'
-    WHERE id = $5 AND user_id = $6
+    WHERE id = $6 AND user_id = $7
     RETURNING ${SELECT_COLUMNS}
     `,
     [
       input.transcriptText,
       input.duration ?? null,
       input.audioFilename ?? null,
-      input.segmentsJson ?? null,  
+      input.audioUrl ?? null,
+      input.segmentsJson ?? null,
       input.id,
       input.userId,
     ]
