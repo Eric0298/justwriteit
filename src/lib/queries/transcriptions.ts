@@ -2,8 +2,10 @@ import { query } from "@/lib/db";
 
 export type TranscriptionType = "file" | "live";
 export type TranscriptionStatus = "pending" | "processing" | "done" | "failed";
-
 export type NotificationStatus = "none" | "pending" | "sent" | "failed";
+
+// JSONB array (segments)
+export type TranscriptionSegments = unknown[]; // o tiparlo más fuerte si quieres
 
 export type TranscriptionRow = {
   id: string;
@@ -12,10 +14,10 @@ export type TranscriptionRow = {
   language: string;
   status: TranscriptionStatus;
   audio_filename: string | null;
+  audio_url: string | null;
   duration: number | null;
   transcript_text: string | null;
-  segments: unknown | null;
-  audio_url: string | null;
+  segments: TranscriptionSegments | null;
   created_at: string;
 
   notification_status: NotificationStatus;
@@ -24,7 +26,7 @@ export type TranscriptionRow = {
 
 const SELECT_COLUMNS = `
   id, user_id, type, language, status,
-  audio_filename,audio_url, duration, transcript_text, segments, created_at,
+  audio_filename, audio_url, duration, transcript_text, segments, created_at,
   notification_status, notification_error
 `;
 
@@ -83,8 +85,8 @@ export async function setTranscriptText(input: {
   transcriptText: string;
   duration?: number | null;
   audioFilename?: string | null;
-  audioUrl?: string | null;        
-  segmentsJson?: string | null;    
+  audioUrl?: string | null;
+  segmentsJson?: string | null; // string JSON array (para castear a jsonb)
 }): Promise<TranscriptionRow | null> {
   const res = await query<TranscriptionRow>(
     `
@@ -115,7 +117,7 @@ export async function setTranscriptText(input: {
 export async function setNotificationStatus(input: {
   id: string;
   userId: string;
-  status: Exclude<NotificationStatus, "none">; // no tiene sentido setear "none" aquí
+  status: Exclude<NotificationStatus, "none">;
   error?: string | null;
 }): Promise<TranscriptionRow | null> {
   const res = await query<TranscriptionRow>(
@@ -168,10 +170,6 @@ export async function getUserTranscriptionById(input: {
   return res.rows[0] ?? null;
 }
 
-/**
- * Búsqueda full-text básica (usa el índice GIN)
- * queryText: texto que el usuario busca dentro de transcript_text
- */
 export async function searchUserTranscriptions(input: {
   userId: string;
   queryText: string;

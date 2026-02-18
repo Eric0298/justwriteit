@@ -1,0 +1,18 @@
+export type WhisperSegment = {
+  id: number;
+  start: number;
+  end: number;
+  text: string;
+};
+
+export type Transcription = {
+  id: string;
+  status: string;
+  language: string;
+  audio_filename: string | null;
+  audio_url: string | null;
+  duration: number | null;
+  transcript_text: string | null;
+  segments: WhisperSegment[] | null;
+  created_at: string;
+};

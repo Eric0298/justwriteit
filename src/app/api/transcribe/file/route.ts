@@ -1,4 +1,3 @@
-// src/app/api/transcribe/file/route.ts
 import { auth } from "@/../auth";
 import { transcribeFileSchema } from "@/lib/validators/transcribe";
 import { getTranscriptionAdapter } from "@/lib/transcription/adapter";
@@ -7,6 +6,7 @@ import {
   setTranscriptText,
   updateTranscriptionStatus,
   setNotificationStatus,
+  type TranscriptionRow,
 } from "@/lib/queries/transcriptions";
 import { getUserById } from "@/lib/queries/users";
 import { notifyTranscriptionCompleted } from "@/lib/n8n";
@@ -69,25 +69,25 @@ export async function POST(req: Request) {
 
   try {
     // 2) Descargamos desde Vercel Blob
-const fileRes = await fetch(body.fileUrl, { cache: "no-store" });
-if (!fileRes.ok) {
-  throw new Error(`No se pudo descargar el archivo (HTTP ${fileRes.status}).`);
-}
+    const fileRes = await fetch(body.fileUrl, { cache: "no-store" });
+    if (!fileRes.ok) {
+      throw new Error(`No se pudo descargar el archivo (HTTP ${fileRes.status}).`);
+    }
 
-// Si el servidor manda content-length, validamos antes
-const lenHeader = fileRes.headers.get("content-length");
-if (lenHeader) {
-  const len = Number(lenHeader);
-  if (Number.isFinite(len) && len > MAX_BYTES) {
-    throw new Error("Archivo demasiado grande (máx 25MB).");
-  }
-}
+    // Si el servidor manda content-length, validamos antes
+    const lenHeader = fileRes.headers.get("content-length");
+    if (lenHeader) {
+      const len = Number(lenHeader);
+      if (Number.isFinite(len) && len > MAX_BYTES) {
+        throw new Error("Archivo demasiado grande (máx 25MB).");
+      }
+    }
 
-const ab = await fileRes.arrayBuffer();
-if (ab.byteLength <= 0) throw new Error("Archivo vacío.");
-if (ab.byteLength > MAX_BYTES) throw new Error("Archivo demasiado grande (máx 25MB).");
+    const ab = await fileRes.arrayBuffer();
+    if (ab.byteLength <= 0) throw new Error("Archivo vacío.");
+    if (ab.byteLength > MAX_BYTES) throw new Error("Archivo demasiado grande (máx 25MB).");
 
-const buffer = Buffer.from(ab);
+    const buffer = Buffer.from(ab);
 
     // 3) Transcribir
     const adapter = getTranscriptionAdapter();
@@ -99,6 +99,9 @@ const buffer = Buffer.from(ab);
       context: parsed.data.context || undefined,
     });
 
+    const segs = out.segments ?? []; // ✅ siempre array
+    const segmentsJson = segs.length > 0 ? JSON.stringify(segs) : null;
+
     // 4) Guardar
     const saved = await setTranscriptText({
       id: row.id,
@@ -107,14 +110,23 @@ const buffer = Buffer.from(ab);
       duration: out.durationSec ? Math.round(out.durationSec) : null,
       audioFilename: body.filename,
       audioUrl: body.fileUrl,
-      segmentsJson: out.segments ? JSON.stringify(out.segments) : null,
+      segmentsJson,
     });
+
+    // Por seguridad: si por alguna razón no vuelve fila
+    if (!saved) {
+      throw new Error("No se pudo guardar la transcripción.");
+    }
 
     // 5) Notificar (no bloqueante)
     try {
       const user = await getUserById(session.user.id);
-      if (user && saved) {
-        const baseUrl = process.env.APP_URL || process.env.NEXTAUTH_URL || "https://justwriteit-i6j1.vercel.app";
+      if (user) {
+        const baseUrl =
+          process.env.APP_URL ||
+          process.env.NEXTAUTH_URL ||
+          "https://justwriteit-i6j1.vercel.app";
+
         const notifyRes = await notifyTranscriptionCompleted({
           transcriptionId: saved.id,
           userEmail: user.email,
@@ -137,7 +149,15 @@ const buffer = Buffer.from(ab);
       console.error("n8n notify failed (ignored):", err);
     }
 
-return Response.json({ ok: true, transcription: saved, segments: out.segments ?? [] });  } catch (e) {
+    // ✅ Respuesta limpia: transcription incluye segments
+    return Response.json({
+      ok: true,
+      transcription: {
+        ...saved,
+        segments: segs,
+      },
+    });
+  } catch (e) {
     await updateTranscriptionStatus({
       id: row.id,
       userId: session.user.id,

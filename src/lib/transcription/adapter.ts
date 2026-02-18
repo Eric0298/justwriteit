@@ -11,8 +11,7 @@ type TranscribeFileInput = {
 type TranscribeFileOutput = {
   text: string;
   durationSec: number;
-  segments?: WhisperSegment[]; // ✅ NUEVO
-  rawText?: string;           // ✅ opcional
+  segments?: WhisperSegment[];
 };
 
 function sanitizeBaseUrl(raw: string) {
@@ -25,10 +24,7 @@ function sanitizeBaseUrl(raw: string) {
 
 export function getTranscriptionAdapter() {
   const raw = process.env.WHISPER_SERVICE_URL;
-
-  if (!raw) {
-    throw new Error("WHISPER_SERVICE_URL no definida");
-  }
+  if (!raw) throw new Error("WHISPER_SERVICE_URL no definida");
 
   const whisperUrl = sanitizeBaseUrl(raw);
   const whisper = new WhisperHttpAdapter(whisperUrl);
@@ -39,8 +35,7 @@ export function getTranscriptionAdapter() {
       return {
         text: res.text,
         durationSec: res.durationSec,
-        segments: res.segments, // ✅ NUEVO
-        rawText: res.rawText,
+        segments: res.segments,
       };
     },
   };
