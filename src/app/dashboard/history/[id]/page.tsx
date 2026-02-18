@@ -6,6 +6,40 @@ import { Badge } from "@/components/ui/Badge";
 import { formatDateTime } from "@/lib/format";
 import { notFound, redirect } from "next/navigation";
 import { HistoryActions } from "@/components/history/HistoryActions";
+import { TranscriptStudyView, type WhisperSegment } from "@/components/history/TranscriptStudyView";
+
+function isObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null;
+}
+
+function isSegment(v: unknown): v is WhisperSegment {
+  if (!isObject(v)) return false;
+  return (
+    typeof v.id === "number" &&
+    typeof v.start === "number" &&
+    typeof v.end === "number" &&
+    typeof v.text === "string"
+  );
+}
+
+function normalizeSegments(raw: unknown): WhisperSegment[] {
+  if (!raw) return [];
+
+  if (typeof raw === "string") {
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter(isSegment) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  if (Array.isArray(raw)) {
+    return raw.filter(isSegment);
+  }
+
+  return [];
+}
 
 export default async function HistoryDetailPage({
   params,
@@ -17,9 +51,10 @@ export default async function HistoryDetailPage({
 
   const { id } = await params;
 
-  // Seguridad: ya filtra por userId dentro del query
   const row = await getUserTranscriptionById({ userId: session.user.id, id });
   if (!row) notFound();
+
+  const segments = normalizeSegments(row.segments);
 
   return (
     <Card className="p-6">
@@ -49,13 +84,10 @@ export default async function HistoryDetailPage({
         <HistoryActions id={row.id} transcriptText={row.transcript_text ?? ""} />
       </div>
 
-      <div className="mt-6">
-        <h2 className="text-sm font-medium">Texto transcrito</h2>
-
-        <pre className="mt-2 whitespace-pre-wrap rounded-md border p-4 text-sm">
-          {row.transcript_text ?? "(sin texto)"}
-        </pre>
-      </div>
+      <TranscriptStudyView
+        transcriptText={row.transcript_text ?? ""}
+        segments={segments}
+      />
     </Card>
   );
 }
