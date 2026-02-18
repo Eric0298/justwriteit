@@ -1,46 +1,79 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 @import "tailwindcss";
 @reference "tailwindcss";
-:root {
-  --bg: 255 255 255;
-  --fg: 17 24 39;         
-  --muted: 107 114 128;   
-  --border: 229 231 235;  
-  --card: 255 255 255;
 
-  --primary: 17 24 39;
+/* =========================================================
+   THEME TOKENS (Ice Blue / Calm)
+   - Fondos: blancos/negros "suaves" (azulados)
+   - Color: en bordes, acentos, hover, glow
+   - Mantiene light/dark con variables RGB
+========================================================= */
+:root {
+  /* Base surfaces */
+  --bg: 246 248 252;            /* ice white */
+  --fg: 15 23 42;               /* slate-900-ish */
+  --muted: 71 85 105;           /* slate-600-ish */
+  --border: 226 232 240;        /* slate-200-ish */
+  --card: 255 255 255;          /* true white but softened by overlays */
+
+  /* Brand / accents (ice blue) */
+  --primary: 15 23 42;          /* deep slate */
   --primary-fg: 255 255 255;
 
-  --accent: 99 102 241;   
-  --accent-fg: 255 255 255;
+  --accent: 56 189 248;         /* sky-400 */
+  --accent-fg: 3 7 18;          /* near-black */
+  --accent-2: 99 102 241;       /* indigo-500 (secondary accent) */
 
-  --danger: 239 68 68;    
+  --danger: 239 68 68;
 
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 18px;
+  /* Radii */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
 
-  --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
-  --shadow-md: 0 8px 24px rgba(0,0,0,.10);
+  /* Shadows (soft) */
+  --shadow-sm: 0 1px 2px rgba(2, 6, 23, 0.05);
+  --shadow-md: 0 12px 40px rgba(2, 6, 23, 0.12);
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji",
-    "Segoe UI Emoji";
+  /* Glows (accent) */
+  --glow-accent: 0 0 0 4px rgba(56, 189, 248, 0.18);
+  --glow-danger: 0 0 0 4px rgba(239, 68, 68, 0.18);
+
+  /* Background gradients */
+  --bg-grad-1: linear-gradient(135deg, rgba(56,189,248,.10), rgba(99,102,241,.08));
+  --bg-grad-2: radial-gradient(900px 500px at 30% -10%, rgba(56,189,248,.16), transparent 60%),
+               radial-gradient(900px 500px at 90% 0%, rgba(99,102,241,.10), transparent 60%);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial,
+    "Apple Color Emoji","Segoe UI Emoji";
 }
 
 .dark {
-  --bg: 9 9 11;           
-  --fg: 244 244 245;      
-  --muted: 161 161 170;   
-  --border: 39 39 42;     
-  --card: 12 12 14;
+  --bg: 8 12 20;                 /* deep blue-black */
+  --fg: 241 245 249;             /* slate-100-ish */
+  --muted: 148 163 184;          /* slate-400-ish */
+  --border: 30 41 59;            /* slate-800-ish */
+  --card: 10 15 26;              /* slightly lifted */
 
-  --primary: 244 244 245;
-  --primary-fg: 9 9 11;
+  --primary: 241 245 249;
+  --primary-fg: 8 12 20;
 
-  --accent: 129 140 248;  /* indigo-400-ish */
-  --accent-fg: 9 9 11;
+  --accent: 125 211 252;         /* sky-300 */
+  --accent-fg: 8 12 20;
+  --accent-2: 165 180 252;       /* indigo-300 */
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.25);
+  --shadow-md: 0 20px 60px rgba(0,0,0,0.40);
+
+  --glow-accent: 0 0 0 4px rgba(125, 211, 252, 0.16);
+  --glow-danger: 0 0 0 4px rgba(239, 68, 68, 0.18);
+
+  --bg-grad-1: linear-gradient(135deg, rgba(125,211,252,.10), rgba(165,180,252,.08));
+  --bg-grad-2: radial-gradient(900px 500px at 25% -10%, rgba(125,211,252,.14), transparent 60%),
+               radial-gradient(900px 500px at 90% 0%, rgba(165,180,252,.10), transparent 60%);
 }
 
 html {
@@ -57,49 +90,145 @@ body {
   font-family: var(--font-sans);
 }
 
-:focus-visible {
-  outline: 2px solid rgb(var(--accent));
-  outline-offset: 3px;
+/* Calm background “ambient” */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--bg-grad-2), var(--bg-grad-1);
+  opacity: 1;
+  z-index: -1;
 }
 
+:focus-visible {
+  outline: none;
+  box-shadow: var(--glow-accent);
+  border-radius: 10px;
+}
+
+/* =========================================================
+   COMPONENT CLASSES
+========================================================= */
 @layer components {
   .container-app {
     @apply mx-auto w-full max-w-6xl px-4;
   }
 
+  /* ---- CARD ---- */
   .card {
     background: rgb(var(--card));
-    @apply rounded-[var(--radius-lg)] border;
     border-color: rgb(var(--border));
+    @apply rounded-[var(--radius-lg)] border;
     box-shadow: var(--shadow-sm);
   }
 
+  /* Glass / header surfaces */
+  .header-glass {
+    border-color: rgb(var(--border));
+    background: rgba(var(--bg), 0.72);
+    @apply border-b backdrop-blur;
+  }
+
+  .sidebar-card {
+    background: rgba(var(--card), 0.72);
+    border-color: rgb(var(--border));
+    @apply rounded-[var(--radius-lg)] border p-4;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .backdrop {
+    @apply bg-black/35 backdrop-blur-sm;
+  }
+
+  .drawer {
+    background: rgba(var(--card), 0.85);
+    border-color: rgb(var(--border));
+    @apply border-r p-6 shadow-2xl backdrop-blur;
+  }
+
+  /* ---- BRAND ---- */
+  .brand {
+    @apply inline-flex items-center gap-2 rounded-full px-2 py-1 transition;
+  }
+
+  .brand:hover {
+    background: rgba(var(--fg), 0.04);
+  }
+
+  .brand-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgb(var(--accent)), rgb(var(--accent-2)));
+    box-shadow: 0 0 0 3px rgba(var(--accent), 0.18);
+  }
+
+  /* ---- BUTTONS ---- */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] px-4 py-2 text-sm font-medium transition
-           disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)]
+      px-4 py-2 text-sm font-medium transition
+      disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
   }
 
   .btn-primary {
-    background: rgb(var(--primary));
     color: rgb(var(--primary-fg));
-    @apply hover:opacity-90;
+    background: linear-gradient(135deg, rgba(var(--accent), 0.95), rgba(var(--accent-2), 0.90));
+    box-shadow: 0 8px 24px rgba(56, 189, 248, 0.20);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.03);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0px);
+    filter: brightness(0.98);
   }
 
   .btn-ghost {
-    @apply hover:bg-black/5 dark:hover:bg-white/10;
+    background: transparent;
+    color: rgb(var(--fg));
   }
 
+  .btn-ghost:hover {
+    background: rgba(var(--fg), 0.04);
+  }
+
+  .btn-ghost:active {
+    background: rgba(var(--fg), 0.06);
+  }
+
+  /* Danger variant helper (you also use bg-danger in Button.tsx) */
+  .bg-danger {
+    background: rgb(var(--danger));
+  }
+
+  .text-danger {
+    color: rgb(var(--danger));
+  }
+
+  /* ---- INPUTS / SELECT ---- */
   .input {
-  @apply w-full rounded-[var(--radius-md)] border px-3 py-2 text-sm transition;
-  background: rgb(var(--card));   
-  color: rgb(var(--fg));          
-  border-color: rgb(var(--border));
-}
+    @apply w-full rounded-[var(--radius-md)] border px-3 py-2 text-sm transition;
+    background: rgba(var(--card), 0.80);
+    color: rgb(var(--fg));
+    border-color: rgb(var(--border));
+  }
+
+  .input:hover {
+    border-color: rgba(var(--accent), 0.45);
+  }
 
   .input:focus {
     outline: none;
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.20); /* accent focus ring */
-    border-color: rgba(99, 102, 241, 0.7);
+    box-shadow: var(--glow-accent);
+    border-color: rgba(var(--accent), 0.75);
   }
 
   .label {
@@ -111,8 +240,197 @@ body {
     @apply text-xs;
     color: rgb(var(--muted));
   }
-   select.input option {
-  background: rgb(var(--card));
-  color: rgb(var(--fg));
-}
+
+  select.input option {
+    background: rgb(var(--card));
+    color: rgb(var(--fg));
+  }
+
+  /* ---- NAV ITEMS ---- */
+  .nav-item {
+    color: rgb(var(--muted));
+  }
+
+  .nav-item:hover {
+    background: rgba(var(--fg), 0.04);
+    color: rgb(var(--fg));
+  }
+
+  .nav-item-active {
+    color: rgb(var(--fg));
+    background: rgba(var(--accent), 0.10);
+    border: 1px solid rgba(var(--accent), 0.28);
+    box-shadow: 0 10px 30px rgba(56, 189, 248, 0.12);
+  }
+
+  .nav-icon {
+    border-color: rgba(var(--border), 1);
+    background: rgba(var(--card), 0.65);
+    color: rgb(var(--muted));
+  }
+
+  .nav-icon-active {
+    border-color: rgba(var(--accent), 0.45);
+    background: linear-gradient(135deg, rgba(var(--accent), 0.22), rgba(var(--accent-2), 0.14));
+    color: rgb(var(--fg));
+    box-shadow: 0 10px 24px rgba(56, 189, 248, 0.14);
+  }
+
+  /* ---- BADGE helpers (you already have Badge component classes) ---- */
+  .text-muted {
+    color: rgb(var(--muted));
+  }
+
+  .text-fg {
+    color: rgb(var(--fg));
+  }
+
+  .bg-bg {
+    background: rgb(var(--bg));
+  }
+
+  /* ---- Dialog default polish ---- */
+  dialog {
+    border-color: rgb(var(--border));
+  }
+
+  dialog::backdrop {
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(6px);
+  }
+  .auth-shell {
+    @apply min-h-[calc(100vh-3.5rem)] flex items-center;
+    background:
+      radial-gradient(1200px 600px at 15% 10%, rgba(var(--accent), 0.14), transparent 60%),
+      radial-gradient(900px 500px at 85% 20%, rgba(var(--accent), 0.10), transparent 55%),
+      radial-gradient(800px 500px at 50% 90%, rgba(var(--accent), 0.08), transparent 55%),
+      rgb(var(--bg));
+  }
+
+  .auth-card {
+    @apply rounded-[var(--radius-lg)] border;
+    border-color: rgba(var(--accent), 0.14);
+    background:
+      linear-gradient(180deg, rgba(var(--card), 0.88), rgba(var(--card), 0.98));
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(10px);
+  }
+
+  .auth-badge {
+    border: 1px solid rgba(var(--accent), 0.20);
+    background: linear-gradient(135deg, rgba(var(--accent),0.18), rgba(var(--card),0.90));
+    box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  }
+
+  .input-icon {
+    @apply pointer-events-none absolute left-3 top-[38px] text-muted;
+  }
+
+  .link-soft {
+    @apply font-medium underline underline-offset-4 transition;
+  }
+  .link-soft:hover {
+    color: rgb(var(--accent));
+  }
+
+  .alert {
+    @apply rounded-[var(--radius-lg)] border p-3 text-sm;
+    background: linear-gradient(180deg, rgba(var(--card),0.92), rgba(var(--card),0.98));
+  }
+  .alert-danger {
+    border-color: rgba(var(--danger), 0.45);
+    color: rgb(var(--danger));
+  }
+  .alert-warn {
+    border-color: rgba(var(--accent), 0.25);
+    color: rgb(var(--fg));
+  }
+  .app-shell {
+    @apply relative min-h-dvh;
+  }
+
+  .app-bg {
+    @apply pointer-events-none fixed inset-0 -z-10;
+    background:
+      radial-gradient(1200px 600px at 12% 8%, rgba(var(--accent), 0.14), transparent 60%),
+      radial-gradient(900px 560px at 88% 14%, rgba(var(--accent), 0.10), transparent 55%),
+      radial-gradient(850px 520px at 50% 92%, rgba(var(--accent), 0.08), transparent 55%),
+      rgb(var(--bg));
+  }
+
+  .app-header {
+    @apply sticky top-0 z-40;
+    background: linear-gradient(180deg, rgba(var(--bg), 0.92), rgba(var(--bg), 0.75));
+    border-bottom: 1px solid rgba(var(--accent), 0.12);
+    backdrop-filter: blur(10px);
+  }
+
+  .app-brand {
+    @apply inline-flex items-center gap-2 rounded-[var(--radius-md)] px-2 py-1 transition;
+  }
+  .app-brand:hover {
+    background: rgba(var(--accent), 0.07);
+  }
+
+  .nav-pill {
+    @apply inline-flex items-center rounded-full px-3 py-1.5 text-sm transition;
+    color: rgb(var(--muted));
+    border: 1px solid rgba(var(--accent), 0.12);
+    background: rgba(var(--card), 0.55);
+  }
+  .nav-pill:hover {
+    color: rgb(var(--fg));
+    background: rgba(var(--accent), 0.08);
+    border-color: rgba(var(--accent), 0.20);
+  }
+  .nav-pill-primary {
+    color: rgb(var(--accent-fg));
+    background: linear-gradient(135deg, rgba(var(--accent), 0.95), rgba(var(--accent), 0.75));
+    border-color: rgba(var(--accent), 0.35);
+    box-shadow: 0 10px 22px rgba(0,0,0,.10);
+  }
+  .nav-pill-primary:hover {
+    filter: brightness(1.03);
+  }
+
+  .app-footer {
+    @apply mt-10 border-t;
+    border-color: rgba(var(--accent), 0.10);
+    background: rgba(var(--bg), 0.75);
+    backdrop-filter: blur(10px);
+  }
+  .footer-link {
+    @apply underline underline-offset-4 transition;
+  }
+  .footer-link:hover {
+    color: rgb(var(--accent));
+  }
+
+  .hero-card {
+    @apply rounded-[var(--radius-lg)] border;
+    border-color: rgba(var(--accent), 0.14);
+    background: linear-gradient(180deg, rgba(var(--card), 0.88), rgba(var(--card), 0.98));
+    box-shadow: var(--shadow-md);
+  }
+
+  .hero-kicker {
+    @apply inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs;
+    border-color: rgba(var(--accent), 0.18);
+    background: rgba(var(--accent), 0.06);
+    color: rgb(var(--muted));
+  }
+
+  .mini-card {
+    @apply rounded-[var(--radius-lg)] border;
+    border-color: rgba(var(--accent), 0.12);
+    background: rgba(var(--card), 0.82);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .feature-card {
+    @apply rounded-[var(--radius-lg)] border;
+    border-color: rgba(var(--accent), 0.10);
+    background: rgba(var(--card), 0.78);
+    box-shadow: var(--shadow-sm);
+  }
 }

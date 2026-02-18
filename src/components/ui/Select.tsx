@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/cn";
+import { ChevronDown } from "lucide-react";
 
 export type SelectOption = {
   value: string;
@@ -33,30 +34,39 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           </label>
         ) : null}
 
-        <select
-          id={selectId}
-          ref={ref}
-          className={cn(
-            "input",
-            "bg-[rgb(var(--bg))] text-[rgb(var(--fg))]",
-            error ? "border-[rgb(var(--danger))]" : "",
-            className
-          )}
-          aria-invalid={Boolean(error) || undefined}
-          aria-describedby={describedBy}
-          {...props}
-        >
-          {options.map((opt) => (
-            <option
-              key={opt.value}
-              value={opt.value}
-              disabled={opt.disabled}
-              className="bg-[rgb(var(--bg))] text-[rgb(var(--fg))]"
-            >
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            id={selectId}
+            ref={ref}
+            className={cn(
+              "input pr-10 appearance-none",
+              error
+                ? "border-[rgba(var(--danger),0.55)] focus:shadow-[var(--glow-danger)] focus:border-[rgba(var(--danger),0.75)]"
+                : "",
+              className
+            )}
+            aria-invalid={Boolean(error) || undefined}
+            aria-describedby={describedBy}
+            {...props}
+          >
+            {options.map((opt) => (
+              <option
+                key={opt.value}
+                value={opt.value}
+                disabled={opt.disabled}
+                className="bg-[rgb(var(--card))] text-[rgb(var(--fg))]"
+              >
+                {opt.label}
+              </option>
+            ))}
+          </select>
+
+          <ChevronDown
+            size={16}
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[rgb(var(--muted))]"
+            aria-hidden="true"
+          />
+        </div>
 
         {error ? (
           <p id={errorId} className="text-xs" style={{ color: "rgb(var(--danger))" }}>

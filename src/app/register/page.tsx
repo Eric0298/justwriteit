@@ -24,7 +24,7 @@ export default async function RegisterPage() {
   if (session?.user?.id) redirect("/dashboard");
 
   return (
-    <main className="min-h-[calc(100vh-3.5rem)] flex items-center">
+    <main className="auth-shell">
       <div className="container-app w-full py-10 flex justify-center">
         <RegisterClient />
       </div>

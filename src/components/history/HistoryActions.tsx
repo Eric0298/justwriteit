@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
+import { Copy, Download, Trash2, Subtitles } from "lucide-react";
 
 type Props = {
   id: string;
@@ -67,38 +68,37 @@ export function HistoryActions({ id, transcriptText }: Props) {
   return (
     <>
       <div className="flex flex-wrap gap-2">
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={copy}
-          aria-label="Copiar transcripción"
-        >
+        <Button type="button" variant="ghost" onClick={copy} aria-label="Copiar transcripción">
+          <Copy size={16} aria-hidden="true" />
           Copiar
         </Button>
 
-        {/* Botón-descarga como <a> estilizado */}
         <a
           href={`/api/transcriptions/${id}/download`}
           className="btn btn-ghost"
           aria-label="Descargar transcripción en TXT"
         >
+          <Download size={16} aria-hidden="true" />
           Descargar .txt
         </a>
-        <a
-  href={`/api/transcriptions/${id}/download/vtt`}
-  className="btn btn-ghost"
-  aria-label="Descargar subtítulos VTT"
->
-  Descargar .vtt
-</a>
 
-<a
-  href={`/api/transcriptions/${id}/download/srt`}
-  className="btn btn-ghost"
-  aria-label="Descargar subtítulos SRT"
->
-  Descargar .srt
-</a>
+        <a
+          href={`/api/transcriptions/${id}/download/vtt`}
+          className="btn btn-ghost"
+          aria-label="Descargar subtítulos VTT"
+        >
+          <Subtitles size={16} aria-hidden="true" />
+          Descargar .vtt
+        </a>
+
+        <a
+          href={`/api/transcriptions/${id}/download/srt`}
+          className="btn btn-ghost"
+          aria-label="Descargar subtítulos SRT"
+        >
+          <Subtitles size={16} aria-hidden="true" />
+          Descargar .srt
+        </a>
 
         <Button
           type="button"
@@ -107,6 +107,7 @@ export function HistoryActions({ id, transcriptText }: Props) {
           aria-label="Borrar transcripción"
           disabled={busy}
         >
+          <Trash2 size={16} aria-hidden="true" />
           Borrar
         </Button>
       </div>

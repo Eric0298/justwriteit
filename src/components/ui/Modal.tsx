@@ -3,6 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
+import { X } from "lucide-react";
 
 export type ModalProps = {
   open: boolean;
@@ -56,7 +57,7 @@ export function Modal({
     >
       <div className="p-6">
         <div className="flex items-start justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <h2 id="modal-title" className="text-lg font-semibold">
               {title}
             </h2>
@@ -69,10 +70,11 @@ export function Modal({
 
           <Button
             variant="ghost"
+            className="px-2"
             onClick={() => onOpenChange(false)}
             aria-label="Cerrar"
           >
-            ✕
+            <X size={18} aria-hidden="true" />
           </Button>
         </div>
 

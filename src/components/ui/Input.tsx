@@ -15,7 +15,6 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const hintId = hint ? `${inputId}-hint` : undefined;
     const errorId = error ? `${inputId}-error` : undefined;
 
-    // aria-describedby puede apuntar a hint y/o error
     const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
 
     return (
@@ -31,7 +30,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           id={inputId}
           className={cn(
             "input",
-            error && "border-danger/70 focus:border-danger",
+            error && "border-[rgba(var(--danger),0.55)] focus:shadow-[var(--glow-danger)] focus:border-[rgba(var(--danger),0.75)]",
             className
           )}
           aria-invalid={error ? true : undefined}
@@ -46,7 +45,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         ) : null}
 
         {error ? (
-          <p id={errorId} className="text-xs text-danger">
+          <p id={errorId} className="text-xs" style={{ color: "rgb(var(--danger))" }}>
             {error}
           </p>
         ) : null}

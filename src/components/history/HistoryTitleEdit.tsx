@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
+import { PencilLine, Check, X } from "lucide-react";
 
 type Props = {
   id: string;
@@ -70,7 +71,7 @@ export function HistoryTitleEdit({ id, currentTitle }: Props) {
 
       router.refresh();
       setIsEditing(false);
-    } catch (error) {
+    } catch {
       push({
         title: "Error",
         message: "Error inesperado",
@@ -94,26 +95,67 @@ export function HistoryTitleEdit({ id, currentTitle }: Props) {
 
   if (isEditing) {
     return (
-      <input
-        ref={inputRef}
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        onBlur={handleSave}
-        onKeyDown={handleKeyDown}
-        disabled={isSaving}
-        className="w-full rounded border px-2 py-1 text-sm font-medium outline-none focus:ring-2 focus:ring-accent"
-      />
+      <div className="flex items-center gap-2">
+        <input
+          ref={inputRef}
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={handleKeyDown}
+          disabled={isSaving}
+          className="input h-10 text-sm font-semibold"
+          aria-label="Editar título"
+        />
+
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={() => handleSave()}
+          disabled={isSaving}
+          aria-label="Guardar título"
+          title="Guardar"
+        >
+          <Check size={16} aria-hidden="true" />
+        </button>
+
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={() => {
+            setTitle(currentTitle);
+            setIsEditing(false);
+          }}
+          disabled={isSaving}
+          aria-label="Cancelar edición"
+          title="Cancelar"
+        >
+          <X size={16} aria-hidden="true" />
+        </button>
+      </div>
     );
   }
 
   return (
     <button
       onClick={() => setIsEditing(true)}
-      className="w-full text-left font-medium underline underline-offset-4 hover:text-accent"
+      className="group flex w-full items-center gap-2 text-left"
       title="Click para editar título"
+      type="button"
     >
-      {currentTitle}
+      <span className="min-w-0 truncate text-base font-semibold underline underline-offset-4 group-hover:text-accent">
+        {currentTitle}
+      </span>
+      <span
+        className="grid h-8 w-8 place-items-center rounded-[12px] border opacity-0 transition group-hover:opacity-100"
+        style={{
+          borderColor: "rgba(var(--accent),0.22)",
+          background: "rgba(var(--accent),0.08)",
+        }}
+        aria-hidden="true"
+      >
+        <PencilLine size={16} />
+      </span>
     </button>
   );
 }

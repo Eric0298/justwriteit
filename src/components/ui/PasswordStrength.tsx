@@ -20,7 +20,6 @@ function scorePassword(pw: string) {
   if (rules.lower) score += 1;
   if (rules.upper) score += 1;
   if (rules.number) score += 1;
-
   if (rules.symbol) score += 1;
   if (pw.length >= 12) score += 1;
 
@@ -38,6 +37,13 @@ function scorePassword(pw: string) {
 
 export function PasswordStrength({ password }: Props) {
   const { percent, label, rules } = React.useMemo(() => scorePassword(password), [password]);
+
+  const barBg =
+    percent >= 65
+      ? "linear-gradient(135deg, rgba(var(--accent),0.95), rgba(var(--accent-2),0.85))"
+      : percent >= 35
+      ? "linear-gradient(135deg, rgba(var(--accent),0.55), rgba(var(--accent-2),0.40))"
+      : "linear-gradient(135deg, rgba(var(--danger),0.70), rgba(var(--danger),0.45))";
 
   return (
     <div className="grid gap-2" aria-live="polite">
@@ -59,12 +65,7 @@ export function PasswordStrength({ password }: Props) {
           className="h-full transition-all"
           style={{
             width: `${percent}%`,
-            background:
-              percent >= 65
-                ? "rgb(var(--accent))"
-                : percent >= 35
-                ? "rgba(99,102,241,0.55)"
-                : "rgba(239,68,68,0.65)",
+            background: barBg,
           }}
         />
       </div>

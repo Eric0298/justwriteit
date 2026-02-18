@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Button } from "@/components/ui/Button";
 import type { WhisperSegment } from "./TranscriptStudyView";
+import { Search, XCircle, Play, Repeat } from "lucide-react";
 
 function formatTime(sec: number) {
   const s = Math.max(0, Math.floor(sec));
@@ -50,12 +51,10 @@ export function SegmentsPanel(props: {
     return filtered.findIndex((s) => s.id === activeSegmentId);
   }, [filtered, activeSegmentId]);
 
-  // reset refs on query
   React.useEffect(() => {
     rowRefs.current = [];
   }, [query]);
 
-  // autoscroll pro (solo si se sale)
   React.useEffect(() => {
     if (!audioUrl) return;
     if (activeFilteredIndex < 0) return;
@@ -66,28 +65,49 @@ export function SegmentsPanel(props: {
   }, [activeFilteredIndex, audioUrl]);
 
   return (
-    <div className="mt-4 space-y-2">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex-1">
+    <div className="mt-5 space-y-3">
+      <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+        <div className="space-y-2">
           <label className="label text-xs" htmlFor="seg-search">
             Buscar en segmentos
           </label>
-          <input
-            id="seg-search"
-            className="input"
-            placeholder="Ej: rabbit, introduced, biodiversity..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+
+          <div className="relative">
+            <Search
+              size={16}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[rgb(var(--muted))]"
+              aria-hidden="true"
+            />
+            <input
+              id="seg-search"
+              className="input pl-9"
+              placeholder="Ej: rabbit, introduced, biodiversity..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            {query ? (
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 -translate-y-1/2 btn btn-ghost btn-sm"
+                onClick={() => setQuery("")}
+                aria-label="Limpiar búsqueda"
+                title="Limpiar"
+              >
+                <XCircle size={16} aria-hidden="true" />
+              </button>
+            ) : null}
+          </div>
+
           <p className="hint">
             Click reproduce · <span className="font-medium">Shift+Click</span> solo salta · ↻ crea loop
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-3 sm:justify-end">
           <span className="text-xs text-muted">
             {filtered.length} resultado{filtered.length === 1 ? "" : "s"}
           </span>
+
           <Button type="button" variant="ghost" onClick={() => setQuery("")} disabled={!query}>
             Limpiar
           </Button>
@@ -98,9 +118,19 @@ export function SegmentsPanel(props: {
         Segmentos totales: {segments.length}. Mostrando: {filtered.length}.
       </div>
 
-      <div ref={listRef} className="max-h-[520px] overflow-auto rounded-md border p-3 text-sm">
+      <div
+        ref={listRef}
+        className="max-h-[520px] overflow-auto rounded-[var(--radius-lg)] border p-2 text-sm shadow-[var(--shadow-sm)]"
+        style={{
+          borderColor: "rgba(var(--accent),0.16)",
+          background:
+            "linear-gradient(180deg, rgba(var(--card),0.95), rgba(var(--card),0.72))",
+        }}
+      >
         {filtered.length === 0 ? (
-          <div className="text-sm text-muted p-2">No hay coincidencias para “{query.trim()}”.</div>
+          <div className="text-sm text-muted p-3">
+            No hay coincidencias para “{query.trim()}”.
+          </div>
         ) : (
           filtered.map((s, idx) => {
             const isActive = s.id === activeSegmentId;
@@ -113,10 +143,13 @@ export function SegmentsPanel(props: {
                   rowRefs.current[idx] = el;
                 }}
                 className={[
-                  "py-2 px-2 rounded-md transition",
-                  "border-b last:border-b-0",
-                  isActive ? "bg-accent/15 ring-1 ring-accent" : "hover:bg-muted/30",
+                  "group rounded-[var(--radius-md)] p-3 transition",
+                  "border mb-2 last:mb-0",
+                  isActive ? "segment-active" : "segment-item",
                 ].join(" ")}
+                style={{
+                  borderColor: isActive ? "rgba(var(--accent),0.38)" : "rgba(var(--border),0.95)",
+                }}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div
@@ -132,10 +165,35 @@ export function SegmentsPanel(props: {
                     }}
                     title="Click: reproducir · Shift+Click: solo saltar"
                   >
-                    <div className="text-xs text-muted">
-                      {formatTime(s.start)} – {formatTime(s.end)}
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full border px-2 py-1"
+                        style={{
+                          borderColor: "rgba(var(--accent),0.20)",
+                          background: "rgba(var(--accent),0.08)",
+                        }}
+                      >
+                        {formatTime(s.start)} – {formatTime(s.end)}
+                      </span>
+
+                      {isLoop ? (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full border px-2 py-1"
+                          style={{
+                            borderColor: "rgba(var(--accent),0.24)",
+                            background:
+                              "linear-gradient(135deg, rgba(var(--accent),0.14), rgba(var(--accent-2),0.10))",
+                          }}
+                        >
+                          <Repeat size={14} aria-hidden="true" />
+                          Loop activo
+                        </span>
+                      ) : null}
                     </div>
-                    <div className="whitespace-pre-wrap break-words">{s.text}</div>
+
+                    <div className="mt-2 whitespace-pre-wrap break-words text-sm text-fg/90">
+                      {s.text}
+                    </div>
                   </div>
 
                   <div className="flex shrink-0 items-center gap-2">
@@ -146,7 +204,7 @@ export function SegmentsPanel(props: {
                       aria-label="Reproducir desde este segmento"
                       title="Reproducir desde aquí"
                     >
-                      ▶
+                      <Play size={16} aria-hidden="true" />
                     </button>
 
                     <button
@@ -156,7 +214,7 @@ export function SegmentsPanel(props: {
                       aria-label="Repetir este segmento en bucle"
                       title={isLoop ? "Parar loop de este segmento" : "Loop este segmento"}
                     >
-                      ↻
+                      <Repeat size={16} aria-hidden="true" />
                     </button>
                   </div>
                 </div>

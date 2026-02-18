@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
+import { Download, Trash2 } from "lucide-react";
 
 type Props = {
   id: string;
@@ -47,24 +48,29 @@ export function HistoryListActions({ id }: Props) {
   return (
     <React.Fragment>
       <div className="flex items-center gap-2">
-        {/* AQUÍ ESTABA EL ERROR: Añadida la etiqueta <a> */}
         <a
           href={`/api/transcriptions/${id}/download`}
           className="btn btn-ghost btn-sm"
           aria-label="Descargar"
+          title="Descargar .txt"
         >
-          Descargar
+          <Download size={16} aria-hidden="true" />
+          <span className="hidden sm:inline">Descargar</span>
         </a>
+
         <Button
           type="button"
           variant="ghost"
           size="sm"
           onClick={() => setConfirmOpen(true)}
           disabled={busy}
+          aria-label="Borrar"
         >
-          Borrar
+          <Trash2 size={16} aria-hidden="true" />
+          <span className="hidden sm:inline">Borrar</span>
         </Button>
       </div>
+
       <ConfirmDialog
         open={confirmOpen}
         title="Borrar transcripción"
@@ -76,4 +82,5 @@ export function HistoryListActions({ id }: Props) {
         onClose={() => (busy ? null : setConfirmOpen(false))}
       />
     </React.Fragment>
-  );}
+  );
+}

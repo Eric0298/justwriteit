@@ -3,6 +3,7 @@
 import * as React from "react";
 import { setThemeAction } from "@/app/dashboard/actions";
 import type { Theme } from "@/lib/theme";
+import { Moon, Sun } from "lucide-react";
 
 type Props = {
   initialTheme: Theme;
@@ -37,13 +38,24 @@ export function ThemeToggle({ initialTheme }: Props) {
   return (
     <button
       type="button"
-      className="btn btn-ghost relative"
+      className={cn(
+        "btn btn-ghost relative",
+        "gap-2",
+        "border border-transparent",
+        "hover:border-[rgba(var(--accent),0.25)]"
+      )}
       onClick={toggle}
       aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
       aria-pressed={isDark}
       disabled={isPending}
     >
-      <span className="text-sm">{isDark ? " Claro" : " Oscuro"}</span>
+      {isDark ? <Sun size={16} aria-hidden="true" /> : <Moon size={16} aria-hidden="true" />}
+      <span className="text-sm">{isDark ? "Claro" : "Oscuro"}</span>
     </button>
   );
+}
+
+/** local cn (por si ThemeToggle se usa antes en imports circulares) */
+function cn(...v: Array<string | false | null | undefined>) {
+  return v.filter(Boolean).join(" ");
 }
