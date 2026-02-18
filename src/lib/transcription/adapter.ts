@@ -1,4 +1,4 @@
-import { WhisperHttpAdapter } from "./providers/whisper-http";
+import { WhisperHttpAdapter, type WhisperSegment } from "./providers/whisper-http";
 
 type TranscribeFileInput = {
   fileBuffer: Buffer;
@@ -11,10 +11,12 @@ type TranscribeFileInput = {
 type TranscribeFileOutput = {
   text: string;
   durationSec: number;
+  segments?: WhisperSegment[]; // ✅ NUEVO
+  rawText?: string;           // ✅ opcional
 };
 
 function sanitizeBaseUrl(raw: string) {
-  const url = raw.trim().replace(/\/+$/, ""); // quita trailing slash
+  const url = raw.trim().replace(/\/+$/, "");
   if (!/^https?:\/\//i.test(url)) {
     throw new Error("WHISPER_SERVICE_URL debe empezar por http:// o https://");
   }
@@ -37,6 +39,8 @@ export function getTranscriptionAdapter() {
       return {
         text: res.text,
         durationSec: res.durationSec,
+        segments: res.segments, // ✅ NUEVO
+        rawText: res.rawText,
       };
     },
   };

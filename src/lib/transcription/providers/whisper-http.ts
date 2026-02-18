@@ -1,9 +1,16 @@
-// src/lib/transcription/providers/whisper-http.ts
+export type WhisperSegment = {
+  id: number;
+  start: number; 
+  end: number;   
+  text: string;
+};
 
 export type WhisperTranscribeResult = {
   text: string;
   durationSec: number;
   language: string;
+  segments?: WhisperSegment[]; 
+  rawText?: string;           
 };
 
 type WhisperOk = {
@@ -11,6 +18,8 @@ type WhisperOk = {
   text: string;
   durationSec: number;
   language: string;
+  segments?: WhisperSegment[];
+  rawText?: string;
 };
 
 type WhisperErr = {
@@ -23,14 +32,40 @@ function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null;
 }
 
-function isWhisperOk(v: unknown): v is WhisperOk {
+function isNumber(v: unknown): v is number {
+  return typeof v === "number" && Number.isFinite(v);
+}
+
+function isString(v: unknown): v is string {
+  return typeof v === "string";
+}
+
+function isSegment(v: unknown): v is WhisperSegment {
+  if (!isObject(v)) return false;
   return (
-    isObject(v) &&
-    v.ok === true &&
-    typeof v.text === "string" &&
-    typeof v.durationSec === "number" &&
-    typeof v.language === "string"
+    isNumber(v.id) &&
+    isNumber(v.start) &&
+    isNumber(v.end) &&
+    isString(v.text)
   );
+}
+
+function isWhisperOk(v: unknown): v is WhisperOk {
+  if (
+    !(
+      isObject(v) &&
+      v.ok === true &&
+      typeof v.text === "string" &&
+      typeof v.durationSec === "number" &&
+      typeof v.language === "string"
+    )
+  ) {
+    return false;
+  }
+
+const segs = (v as Record<string, unknown>).segments;  if (segs === undefined) return true;
+  if (!Array.isArray(segs)) return false;
+  return segs.every(isSegment);
 }
 
 function isWhisperErr(v: unknown): v is WhisperErr {
@@ -38,7 +73,6 @@ function isWhisperErr(v: unknown): v is WhisperErr {
 }
 
 function bufferToArrayBuffer(buf: Buffer): ArrayBuffer {
-  // Opción 1: Crear un nuevo ArrayBuffer y copiar los datos
   const arrayBuffer = new ArrayBuffer(buf.byteLength);
   const view = new Uint8Array(arrayBuffer);
   for (let i = 0; i < buf.byteLength; i++) {
@@ -46,6 +80,7 @@ function bufferToArrayBuffer(buf: Buffer): ArrayBuffer {
   }
   return arrayBuffer;
 }
+
 export class WhisperHttpAdapter {
   private baseUrl: string;
 
@@ -72,13 +107,11 @@ export class WhisperHttpAdapter {
     const res = await fetch(`${this.baseUrl}/transcribe/file`, {
       method: "POST",
       body: fd,
-      // IMPORTANTE: no pongas content-type aquí; FormData lo gestiona solo.
     });
 
     const rawText = await res.text();
 
     if (!res.ok) {
-      // Railway/uvicorn a veces devuelve HTML o texto plano
       throw new Error(`Whisper service error: ${res.status} ${rawText}`);
     }
 
@@ -94,6 +127,8 @@ export class WhisperHttpAdapter {
         text: data.text,
         durationSec: data.durationSec,
         language: data.language,
+        segments: data.segments,   
+        rawText: data.rawText,     
       };
     }
 

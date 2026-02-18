@@ -106,6 +106,7 @@ const buffer = Buffer.from(ab);
       transcriptText: out.text,
       duration: out.durationSec ? Math.round(out.durationSec) : null,
       audioFilename: body.filename,
+      segmentsJson: out.segments ? JSON.stringify(out.segments) : null,
     });
 
     // 5) Notificar (no bloqueante)
@@ -135,8 +136,7 @@ const buffer = Buffer.from(ab);
       console.error("n8n notify failed (ignored):", err);
     }
 
-    return Response.json({ ok: true, transcription: saved });
-  } catch (e) {
+return Response.json({ ok: true, transcription: saved, segments: out.segments ?? [] });  } catch (e) {
     await updateTranscriptionStatus({
       id: row.id,
       userId: session.user.id,
