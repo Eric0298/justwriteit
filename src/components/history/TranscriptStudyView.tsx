@@ -30,6 +30,8 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
 
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const [currentTime, setCurrentTime] = React.useState(0);
+  const listRef = React.useRef<HTMLDivElement | null>(null);
+const rowRefs = React.useRef<(HTMLButtonElement | null)[]>([]);
 
   const activeIndex = React.useMemo(() => {
     if (segments.length === 0) return -1;
@@ -48,12 +50,39 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
     return last;
   }, [segments, currentTime]);
 
-  function seekTo(sec: number) {
-    const el = audioRef.current;
-    if (!el) return;
-    el.currentTime = Math.max(0, sec);
-    el.play().catch(() => null);
+  function seekTo(sec: number, autoplay: boolean) {
+  const el = audioRef.current;
+  if (!el) return;
+  el.currentTime = Math.max(0, sec);
+  if (autoplay) el.play().catch(() => null);
+}
+  function isRowVisible(rowEl: HTMLElement, containerEl: HTMLElement) {
+  const rowRect = rowEl.getBoundingClientRect();
+  const contRect = containerEl.getBoundingClientRect();
+
+  // margen para que no “pegue” en bordes
+  const margin = 24;
+
+  const topOk = rowRect.top >= contRect.top + margin;
+  const bottomOk = rowRect.bottom <= contRect.bottom - margin;
+
+  return topOk && bottomOk;
+}
+React.useEffect(() => {
+  if (viewMode !== "study") return;
+  if (!audioUrl) return; // solo cuando está en modo karaoke real
+  if (activeIndex < 0) return;
+
+  const container = listRef.current;
+  const row = rowRefs.current[activeIndex];
+
+  if (!container || !row) return;
+
+  // Solo si no está visible dentro del contenedor con scroll
+  if (!isRowVisible(row, container)) {
+    row.scrollIntoView({ block: "center", behavior: "smooth" });
   }
+}, [activeIndex, viewMode, audioUrl]);
 
   return (
     <div className="mt-6">
@@ -115,14 +144,18 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
             Segmentos: {segments.length} · Click en una línea para saltar a ese momento.
           </div>
 
-          <div className="max-h-[520px] overflow-auto rounded-md border p-3 text-sm">
+          <div
+  ref={listRef}
+  className="max-h-[520px] overflow-auto rounded-md border p-3 text-sm"
+>
             {segments.map((s, idx) => {
               const isActive = idx === activeIndex;
               return (
                 <button
+                ref={(el) => { rowRefs.current[idx] = el; }}
                   key={s.id}
                   type="button"
-                  onClick={() => seekTo(s.start)}
+                  onClick={(e) => seekTo(s.start, !e.shiftKey)}
                   className={[
                     "w-full text-left py-2 px-2 rounded-md transition",
                     "border-b last:border-b-0",
