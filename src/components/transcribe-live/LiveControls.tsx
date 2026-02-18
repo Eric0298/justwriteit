@@ -16,16 +16,27 @@ export function LiveControls(props: {
 }) {
   const { status, canFinish, onStart, onPause, onResume, onStop, onReset } = props;
 
+  const panelStyle: React.CSSProperties = {
+    borderColor: "rgba(var(--accent),0.18)",
+    background:
+      "linear-gradient(135deg, rgba(var(--accent),0.08), rgba(var(--card),0.92))",
+    boxShadow: "var(--shadow-sm)",
+  };
+
+  const ghostBtnStyle: React.CSSProperties = {
+    border: "1px solid rgba(var(--accent),0.18)",
+    background: "rgba(var(--card),0.72)",
+  };
+
+  const disabledBtnStyle: React.CSSProperties = {
+    border: "1px solid rgba(var(--border), 0.9)",
+    background: "rgba(var(--card),0.55)",
+    color: "rgb(var(--muted))",
+  };
+
   return (
     <Card className="p-4 sm:p-6">
-      <div
-        className="rounded-[var(--radius-lg)] border p-4 sm:p-5"
-        style={{
-          borderColor: "rgba(var(--accent),0.16)",
-          background: "linear-gradient(135deg, rgba(var(--accent),0.07), rgba(var(--card),0.96))",
-          boxShadow: "var(--shadow-sm)",
-        }}
-      >
+      <div className="rounded-[var(--radius-lg)] border p-4 sm:p-5" style={panelStyle}>
         <p className="text-xs text-muted">Controles</p>
 
         <div className="mt-3 flex flex-wrap gap-2">
@@ -38,10 +49,16 @@ export function LiveControls(props: {
 
           {status === "recording" ? (
             <>
-              <Button onClick={onPause} variant="ghost" aria-label="Pausar grabación">
+              <Button
+                onClick={onPause}
+                variant="ghost"
+                aria-label="Pausar grabación"
+                style={ghostBtnStyle}
+              >
                 <Pause size={16} aria-hidden="true" />
                 <span>Pausar</span>
               </Button>
+
               <Button onClick={onStop} variant="danger" aria-label="Finalizar grabación">
                 <Square size={16} aria-hidden="true" />
                 <span>Finalizar</span>
@@ -55,6 +72,7 @@ export function LiveControls(props: {
                 <Play size={16} aria-hidden="true" />
                 <span>Reanudar</span>
               </Button>
+
               <Button onClick={onStop} variant="danger" aria-label="Finalizar grabación">
                 <Square size={16} aria-hidden="true" />
                 <span>Finalizar</span>
@@ -63,21 +81,26 @@ export function LiveControls(props: {
           ) : null}
 
           {status === "stopping" ? (
-            <Button disabled aria-label="Finalizando">
+            <Button disabled aria-label="Finalizando" style={disabledBtnStyle}>
               <Square size={16} aria-hidden="true" />
               <span>Finalizando...</span>
             </Button>
           ) : null}
 
           {status === "done" ? (
-            <Button onClick={onReset} variant="ghost" aria-label="Nueva grabación">
+            <Button
+              onClick={onReset}
+              variant="ghost"
+              aria-label="Nueva grabación"
+              style={ghostBtnStyle}
+            >
               <RotateCcw size={16} aria-hidden="true" />
               <span>Nueva</span>
             </Button>
           ) : null}
 
           {!canFinish && status !== "idle" && status !== "done" && status !== "stopping" ? (
-            <Button onClick={onReset} variant="ghost">
+            <Button onClick={onReset} variant="ghost" style={ghostBtnStyle}>
               <RotateCcw size={16} aria-hidden="true" />
               <span>Reset</span>
             </Button>

@@ -1,11 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Button } from "@/components/ui/Button";
 import { AudioPlayerPanel } from "./AudioPlayerPanel";
 import { SegmentsPanel } from "./SegmentsPanel";
 import { useAudioLoop } from "./hooks/useAudioLoop";
-import { BookOpen, FileText } from "lucide-react";
 
 export type WhisperSegment = {
   id: number;
@@ -35,7 +33,8 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
 
   React.useEffect(() => {
     loop.setSegments(segments);
-  }, [segments]); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [segments]);
 
   const activeSegmentId = React.useMemo(() => {
     if (segments.length === 0) return null;
@@ -51,48 +50,85 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
     return last;
   }, [segments, currentTime]);
 
+  const canToggle = segments.length > 0;
+
   return (
     <div className="mt-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-sm font-semibold">
-            {viewMode === "study" ? "Modo estudio (karaoke)" : "Texto transcrito"}
-          </h2>
-          <p className="mt-1 text-xs text-muted">
-            Reproduce el audio y sigue el segmento activo. Activa loop para repetir.
-          </p>
-        </div>
+        <h2 className="text-sm font-medium">
+          {viewMode === "study" ? "Modo estudio (karaoke)" : "Texto transcrito"}
+        </h2>
 
-        {segments.length > 0 && (
+        {canToggle && (
+          // ✅ Segmented control PRO (siempre se ven las 2 opciones)
           <div
-            className="inline-flex rounded-[var(--radius-md)] border p-1"
-            style={{
-              borderColor: "rgba(var(--accent),0.18)",
-              background:
-                "linear-gradient(135deg, rgba(var(--accent),0.10), rgba(var(--card),0.85))",
-            }}
+            className="w-full sm:w-auto"
+            role="tablist"
+            aria-label="Cambiar vista"
           >
-            <Button
-              type="button"
-              variant={viewMode === "study" ? "primary" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("study")}
-              className="rounded-[12px]"
+            <div
+              className="flex w-full sm:w-[240px] items-center gap-1 rounded-full border p-1"
+              style={{
+                borderColor: "rgb(var(--border))",
+                background: "rgba(var(--card), 0.72)",
+              }}
             >
-              <BookOpen size={16} aria-hidden="true" />
-              Estudio
-            </Button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={viewMode === "study"}
+                onClick={() => setViewMode("study")}
+                className={[
+                  "flex-1 rounded-full px-3 py-2 text-sm font-medium transition",
+                  "outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--accent))]",
+                  viewMode === "study"
+                    ? "shadow-sm"
+                    : "opacity-85 hover:opacity-100",
+                ].join(" ")}
+                style={
+                  viewMode === "study"
+                    ? {
+                        background:
+                          "linear-gradient(135deg, rgba(var(--accent), 0.95), rgba(var(--accent-2), 0.88))",
+                        color: "rgb(var(--primary-fg))",
+                      }
+                    : {
+                        background: "transparent",
+                        color: "rgb(var(--fg))",
+                      }
+                }
+              >
+                Estudio
+              </button>
 
-            <Button
-              type="button"
-              variant={viewMode === "text" ? "primary" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("text")}
-              className="rounded-[12px]"
-            >
-              <FileText size={16} aria-hidden="true" />
-              Texto
-            </Button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={viewMode === "text"}
+                onClick={() => setViewMode("text")}
+                className={[
+                  "flex-1 rounded-full px-3 py-2 text-sm font-medium transition",
+                  "outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--accent))]",
+                  viewMode === "text"
+                    ? "shadow-sm"
+                    : "opacity-85 hover:opacity-100",
+                ].join(" ")}
+                style={
+                  viewMode === "text"
+                    ? {
+                        background:
+                          "linear-gradient(135deg, rgba(var(--accent), 0.95), rgba(var(--accent-2), 0.88))",
+                        color: "rgb(var(--primary-fg))",
+                      }
+                    : {
+                        background: "transparent",
+                        color: "rgb(var(--fg))",
+                      }
+                }
+              >
+                Texto
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -113,12 +149,8 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
 
       {viewMode === "text" || segments.length === 0 ? (
         <pre
-          className="mt-4 whitespace-pre-wrap rounded-[var(--radius-lg)] border p-4 text-sm shadow-[var(--shadow-sm)]"
-          style={{
-            borderColor: "rgba(var(--accent),0.14)",
-            background:
-              "linear-gradient(180deg, rgba(var(--card),0.95), rgba(var(--card),0.75))",
-          }}
+          className="mt-4 whitespace-pre-wrap rounded-md border p-4 text-sm"
+          style={{ borderColor: "rgb(var(--border))", background: "rgba(var(--card),0.82)" }}
         >
           {transcriptText || "(sin texto)"}
         </pre>

@@ -156,8 +156,9 @@ export default async function HistoryPage({
 
                         <div className="min-w-0 flex-1">
                           {/* Title editable */}
-                          <HistoryTitleEdit id={t.id} currentTitle={displayTitle} />
-
+<div className="min-w-0 break-all">
+  <HistoryTitleEdit id={t.id} currentTitle={displayTitle} />
+</div>
                           {/* Link to detail */}
                           <Link
                             href={`/dashboard/history/${t.id}`}
