@@ -80,7 +80,7 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Calm background “ambient” */
+/* Calm background "ambient" */
 body::before {
   content: "";
   position: fixed;
@@ -315,8 +315,10 @@ body::before {
     box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
   }
 
+  /* ✅ CORREGIDO: eliminado @apply text-muted, reemplazado por color CSS directo */
   .input-icon {
-    @apply pointer-events-none absolute left-3 top-[38px] text-muted;
+    @apply pointer-events-none absolute left-3 top-[38px];
+    color: rgb(var(--muted));
   }
 
   .link-soft {
