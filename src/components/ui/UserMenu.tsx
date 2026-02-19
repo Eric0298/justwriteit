@@ -1,15 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { LogOut, User } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { signOutAction } from "@/app/dashboard/actions";
 
 type Props = {
   name: string;
   email: string;
+  dropUp?: boolean;
 };
 
-export function UserMenu({ name, email }: Props) {
+export function UserMenu({ name, email, dropUp = false }: Props) {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
@@ -52,6 +53,7 @@ export function UserMenu({ name, email }: Props) {
           placeItems: "center",
           transition: "box-shadow 0.2s, transform 0.15s",
           letterSpacing: "0.02em",
+          flexShrink: 0,
         }}
         onMouseEnter={(e) => {
           (e.currentTarget as HTMLButtonElement).style.boxShadow =
@@ -69,11 +71,18 @@ export function UserMenu({ name, email }: Props) {
 
       {open && (
         <div
-          className="absolute right-0 top-full z-50 mt-2 w-56 rounded-[var(--radius-lg)] border p-1"
+          className="absolute z-50 w-56 rounded-[var(--radius-lg)] border p-1"
           style={{
             background: "rgb(var(--card))",
             borderColor: "rgba(var(--accent),0.25)",
             boxShadow: "var(--shadow-md)",
+            /* 
+              dropUp=true  → abre hacia ARRIBA + hacia la DERECHA (drawer móvil inferior)
+              dropUp=false → abre hacia ABAJO  + alineado a la derecha (header)
+            */
+            ...(dropUp
+              ? { bottom: "calc(100% + 8px)", left: 0 }
+              : { top: "calc(100% + 8px)", right: 0 }),
           }}
         >
           {/* Info usuario */}
@@ -81,7 +90,6 @@ export function UserMenu({ name, email }: Props) {
             className="flex items-center gap-3 px-3 py-2.5 mb-1 border-b"
             style={{ borderColor: "rgb(var(--border))" }}
           >
-            {/* Mini avatar en el dropdown */}
             <span
               style={{
                 width: "32px", height: "32px", borderRadius: "50%",
@@ -93,8 +101,12 @@ export function UserMenu({ name, email }: Props) {
               {initials}
             </span>
             <div className="min-w-0">
-              <p className="text-xs font-semibold truncate" style={{ color: "rgb(var(--fg))" }}>{name}</p>
-              <p className="text-xs truncate" style={{ color: "rgb(var(--muted))" }}>{email}</p>
+              <p className="text-xs font-semibold truncate" style={{ color: "rgb(var(--fg))" }}>
+                {name}
+              </p>
+              <p className="text-xs truncate" style={{ color: "rgb(var(--muted))" }}>
+                {email}
+              </p>
             </div>
           </div>
 
@@ -105,7 +117,8 @@ export function UserMenu({ name, email }: Props) {
               className="flex w-full items-center gap-2 rounded-[var(--radius-md)] px-3 py-2 text-sm transition"
               style={{ color: "rgb(var(--danger))" }}
               onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLButtonElement).style.background = "rgba(239,68,68,0.08)")
+                ((e.currentTarget as HTMLButtonElement).style.background =
+                  "rgba(239,68,68,0.08)")
               }
               onMouseLeave={(e) =>
                 ((e.currentTarget as HTMLButtonElement).style.background = "transparent")

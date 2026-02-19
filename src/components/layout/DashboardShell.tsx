@@ -22,7 +22,7 @@ export function DashboardShell({
 }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
-  // Ocultar el header global en móvil dentro del dashboard (evita duplicación)
+  // Ocultar el header global en móvil dentro del dashboard
   React.useEffect(() => {
     const header = document.getElementById("global-header");
     if (!header) return;
@@ -42,7 +42,7 @@ export function DashboardShell({
     <div className="min-h-screen">
       <div className="container-app grid gap-6 py-6 md:grid-cols-[280px_1fr]">
 
-        {/* ===== SIDEBAR DESKTOP — solo navegación ===== */}
+        {/* ===== SIDEBAR DESKTOP ===== */}
         <aside className="hidden md:block sidebar-card md:sticky md:top-6 md:h-[calc(100vh-3rem)]">
           <div className="mt-1">
             <p className="text-xs font-semibold tracking-wide text-muted">NAVEGACIÓN</p>
@@ -58,14 +58,9 @@ export function DashboardShell({
             <span className="brand-dot" aria-hidden="true" />
             <span className="font-semibold tracking-tight">JustWriteIt</span>
           </Link>
-
           <div className="flex items-center gap-2">
             <ThemeToggle initialTheme={initialTheme} />
-            <Button
-              variant="ghost"
-              onClick={() => setMobileOpen(true)}
-              aria-label="Abrir menú"
-            >
+            <Button variant="ghost" onClick={() => setMobileOpen(true)} aria-label="Abrir menú">
               <Menu size={18} aria-hidden="true" />
             </Button>
           </div>
@@ -77,18 +72,13 @@ export function DashboardShell({
             <div className="fixed inset-0 z-40 backdrop" onClick={() => setMobileOpen(false)} />
             <aside className="fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] drawer flex flex-col">
 
-              {/* Cabecera del drawer */}
+              {/* Cabecera */}
               <div className="flex items-center justify-between">
                 <Link href="/" className="btn btn-ghost text-sm" aria-label="Ir a la landing">
                   <ExternalLink size={16} aria-hidden="true" />
                   <span>Landing</span>
                 </Link>
-                <Button
-                  variant="ghost"
-                  className="px-2"
-                  onClick={() => setMobileOpen(false)}
-                  aria-label="Cerrar menú"
-                >
+                <Button variant="ghost" className="px-2" onClick={() => setMobileOpen(false)} aria-label="Cerrar menú">
                   <X size={18} aria-hidden="true" />
                 </Button>
               </div>
@@ -99,12 +89,11 @@ export function DashboardShell({
                 <DashboardNav onNavigate={() => setMobileOpen(false)} />
               </div>
 
-              {/* Usuario en la parte inferior del drawer */}
               <div
                 className="mt-6 pt-4 border-t flex items-center gap-3"
                 style={{ borderColor: "rgb(var(--border))" }}
               >
-                <UserMenu name={userName} email={userEmail} />
+                <UserMenu name={userName} email={userEmail} dropUp={true} />
                 <div className="min-w-0">
                   <p className="text-sm font-semibold truncate" style={{ color: "rgb(var(--fg))" }}>
                     {userName}
