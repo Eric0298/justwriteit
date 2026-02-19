@@ -55,7 +55,7 @@ export default async function HistoryPage({
   const canNext = page < totalPages;
 
   return (
-    <Card className="p-4 sm:p-6">
+  <Card className="p-4 sm:p-6 min-w-0 overflow-x-hidden">
       {/* ===== Header ===== */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
@@ -123,7 +123,7 @@ export default async function HistoryPage({
       ) : (
         <>
           {/* ===== List ===== */}
-          <ul className="mt-6 grid gap-3">
+          <ul className="mt-6 grid gap-3 min-w-0">
             {rows.map((t) => {
               const preview = clampText(t.transcript_text ?? "(sin texto)", 160);
               const displayTitle = t.audio_filename || `Transcripción ${t.type}`;
@@ -132,7 +132,8 @@ export default async function HistoryPage({
               return (
                 <li
                   key={t.id}
-                  className="rounded-[var(--radius-lg)] border p-3 sm:p-4 transition hover:shadow-[var(--shadow-sm)]"
+                 className="rounded-[var(--radius-lg)] border p-3 sm:p-4 transition hover:shadow-[var(--shadow-sm)] min-w-0"
+
                   style={{
                     borderColor: "rgba(var(--accent),0.14)",
                     background:
@@ -156,9 +157,10 @@ export default async function HistoryPage({
 
                         <div className="min-w-0 flex-1">
                           {/* Title editable */}
-<div className="min-w-0 break-all">
+<div className="min-w-0 break-words">
   <HistoryTitleEdit id={t.id} currentTitle={displayTitle} />
 </div>
+
                           {/* Link to detail */}
                           <Link
                             href={`/dashboard/history/${t.id}`}
