@@ -44,27 +44,27 @@ export function DashboardShell({
             </div>
           </div>
 
-          <div className="mt-4 border-t pt-4" style={{ borderColor: "rgb(var(--border))" }}>
-            <p className="text-xs text-muted">
-              Consejo: usa “Historial” para volver a tus transcripciones.
-            </p>
-          </div>
+        
         </aside>
 
-        {/* ===== BOTÓN MENÚ MÓVIL ===== */}
+        {/* ===== BARRA SUPERIOR MÓVIL ===== */}
+        {/* ThemeToggle movido aquí desde el drawer – más limpio y accesible */}
         <div className="md:hidden flex items-center justify-between">
           <Link href="/dashboard" className="brand">
             <span className="brand-dot" aria-hidden="true" />
             <span className="font-semibold tracking-tight">JustWriteIt</span>
           </Link>
 
-          <Button
-            variant="ghost"
-            onClick={() => setMobileOpen(true)}
-            aria-label="Abrir menú"
-          >
-            <Menu size={18} aria-hidden="true" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <ThemeToggle initialTheme={initialTheme} />
+            <Button
+              variant="ghost"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Abrir menú"
+            >
+              <Menu size={18} aria-hidden="true" />
+            </Button>
+          </div>
         </div>
 
         {/* ===== SIDEBAR MÓVIL (DRAWER) ===== */}
@@ -73,11 +73,12 @@ export function DashboardShell({
             <div className="fixed inset-0 z-40 backdrop" onClick={() => setMobileOpen(false)} />
 
             <aside className="fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] drawer">
+              {/* Logo eliminado del drawer – ThemeToggle movido al header móvil */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="brand-dot" aria-hidden="true" />
-                  <p className="text-sm font-semibold">JustWriteIt</p>
-                </div>
+                <Link href="/" className="btn btn-ghost text-sm" aria-label="Ir a la landing">
+                  <ExternalLink size={16} aria-hidden="true" />
+                  <span>Landing</span>
+                </Link>
 
                 <Button
                   variant="ghost"
@@ -87,14 +88,6 @@ export function DashboardShell({
                 >
                   <X size={18} aria-hidden="true" />
                 </Button>
-              </div>
-
-              <div className="mt-4 flex items-center justify-between gap-2">
-                <ThemeToggle initialTheme={initialTheme} />
-                <Link href="/" className="btn btn-ghost text-sm" aria-label="Ir a la landing">
-                  <ExternalLink size={16} aria-hidden="true" />
-                  <span>Landing</span>
-                </Link>
               </div>
 
               <p className="mt-6 text-xs font-semibold tracking-wide text-muted">NAVEGACIÓN</p>

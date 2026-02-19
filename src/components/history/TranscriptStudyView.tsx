@@ -60,7 +60,7 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
         </h2>
 
         {canToggle && (
-          // ✅ Segmented control PRO (siempre se ven las 2 opciones)
+          // ✅ Segmented control – estado inactivo visible con .study-tab-inactive
           <div
             className="w-full sm:w-auto"
             role="tablist"
@@ -73,6 +73,7 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
                 background: "rgba(var(--card), 0.72)",
               }}
             >
+              {/* Botón ESTUDIO */}
               <button
                 type="button"
                 role="tab"
@@ -83,7 +84,7 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
                   "outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--accent))]",
                   viewMode === "study"
                     ? "shadow-sm"
-                    : "opacity-85 hover:opacity-100",
+                    : "study-tab-inactive",
                 ].join(" ")}
                 style={
                   viewMode === "study"
@@ -92,15 +93,13 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
                           "linear-gradient(135deg, rgba(var(--accent), 0.95), rgba(var(--accent-2), 0.88))",
                         color: "rgb(var(--primary-fg))",
                       }
-                    : {
-                        background: "transparent",
-                        color: "rgb(var(--fg))",
-                      }
+                    : undefined
                 }
               >
                 Estudio
               </button>
 
+              {/* Botón TEXTO */}
               <button
                 type="button"
                 role="tab"
@@ -111,7 +110,7 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
                   "outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--accent))]",
                   viewMode === "text"
                     ? "shadow-sm"
-                    : "opacity-85 hover:opacity-100",
+                    : "study-tab-inactive",
                 ].join(" ")}
                 style={
                   viewMode === "text"
@@ -120,10 +119,7 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
                           "linear-gradient(135deg, rgba(var(--accent), 0.95), rgba(var(--accent-2), 0.88))",
                         color: "rgb(var(--primary-fg))",
                       }
-                    : {
-                        background: "transparent",
-                        color: "rgb(var(--fg))",
-                      }
+                    : undefined
                 }
               >
                 Texto
