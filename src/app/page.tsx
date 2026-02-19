@@ -34,12 +34,11 @@ export default function LandingPage() {
             </p>
 
             <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Transcribe y escribe sin fricción.
+              De audio a texto, sin complicaciones.
             </h1>
 
             <p className="mt-4 text-muted leading-relaxed">
               Sube un audio o graba en vivo. Guarda todo en tu historial y vuelve cuando quieras.
-              Base profesional lista para crecer (auth, DB, seguridad y deploy).
             </p>
 
             <div className="mt-7 flex flex-wrap gap-3">
@@ -111,9 +110,9 @@ export default function LandingPage() {
       {/* FEATURES */}
       <section className="mt-8 grid gap-4 md:grid-cols-3">
         <div className="feature-card p-5">
-          <p className="text-sm font-medium">Diseño calmado</p>
+          <p className="text-sm font-medium">Enfocados en “modo estudio”</p>
           <p className="mt-2 text-sm text-muted">
-            Fondos hielo y color solo en detalles, bordes, badges y acciones.
+            Aprende del audio: localiza, lee y repasa por partes
           </p>
         </div>
 
@@ -125,9 +124,9 @@ export default function LandingPage() {
         </div>
 
         <div className="feature-card p-5">
-          <p className="text-sm font-medium">Listo para branding</p>
+          <p className="text-sm font-medium">Próximo feat</p>
           <p className="mt-2 text-sm text-muted">
-            Después añadimos logo, favicon e imágenes sin rehacer la base.
+            Traducción de la transcripción. 
           </p>
         </div>
       </section>

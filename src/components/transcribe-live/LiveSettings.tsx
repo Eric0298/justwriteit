@@ -41,7 +41,7 @@ export function LiveSettings(props: {
       </div>
 
       <p className="mt-3 text-xs text-muted">
-        Puedes ajustar idioma/contexto solo antes de empezar (estado: idle).
+        Puedes ajustar idioma/contexto solo antes de empezar.
       </p>
     </Card>
   );

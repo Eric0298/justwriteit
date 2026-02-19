@@ -79,7 +79,6 @@ export default function RegisterClient() {
   const clientBox =
     clientSummary.length > 0 && Object.values(touched).some(Boolean) ? (
       <div className="alert alert-warn mt-4" role="alert" aria-live="polite">
-        <p className="font-medium">Ajusta esto y listo:</p>
         <ul className="mt-2 space-y-1">
           {clientSummary.map((line) => (
             <li key={line}>{line}</li>
