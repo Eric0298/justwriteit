@@ -12,13 +12,12 @@ export default async function DashboardHomePage() {
   return (
     <div className="card p-6">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
-      <p className="mt-2 text-sm text-muted">
-        Bienvenido, <span className="font-semibold text-fg">{nombre}</span>.
-        Aquí podrás transcribir tus archivos de audio a texto e incluso transcribir
-        grabaciones de voz, además de usar el modo estudio para perfeccionar tu
-        capacidad de escucha en diferentes idiomas. También puedes acceder a todas
-        tus transcripciones desde el historial.
-      </p>
+      <p className="mt-2 text-sm text-muted leading-relaxed">
+  Hola, <span className="font-semibold text-fg">{nombre}</span>.  
+  Tu centro de trabajo: transcribe archivos o grabaciones en vivo, organiza todo en el historial
+  y usa el <span className="font-medium text-fg">modo estudio</span> para practicar idiomas con precisión.
+</p>
+
 
       <div className="mt-6 flex flex-wrap gap-3">
         <Link href="/dashboard/transcribe-file">

@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="JWI">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#ffffff"/>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="JWI">
   <title>JWI</title>
   <rect x="0" y="0" width="64" height="64" rx="14" fill="none"/>
   <g fill="currentColor" transform="skewX(-12)">
@@ -12,3 +14,6 @@
     >JWI</text>
   </g>
 </svg>
+</svg>
+
+
