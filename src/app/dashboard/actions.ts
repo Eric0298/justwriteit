@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { THEME_COOKIE, normalizeTheme, type Theme } from "@/lib/theme";
 import { signOut } from "@/../auth";
 
@@ -17,5 +18,6 @@ export async function setThemeAction(nextTheme: Theme) {
 }
 
 export async function signOutAction() {
-  await signOut({ redirectTo: "/" });
+  await signOut({ redirect: false });
+  redirect("/");
 }
