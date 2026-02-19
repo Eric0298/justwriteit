@@ -20,35 +20,20 @@ export function DashboardShell({
   return (
     <div className="min-h-screen">
       <div className="container-app grid gap-6 py-6 md:grid-cols-[280px_1fr]">
+
         {/* ===== SIDEBAR DESKTOP ===== */}
+        {/* Solo contiene la navegación — logo, tema y landing están en el header */}
         <aside className="hidden md:block sidebar-card md:sticky md:top-6 md:h-[calc(100vh-3rem)]">
-          <div className="flex items-center justify-between gap-2">
-            <Link href="/dashboard" className="brand">
-              <span className="brand-dot" aria-hidden="true" />
-              <span className="font-semibold tracking-tight">JustWriteIt</span>
-            </Link>
-
-            <div className="flex items-center gap-2">
-              <ThemeToggle initialTheme={initialTheme} />
-              <Link href="/" className="btn btn-ghost text-sm" aria-label="Ir a la landing">
-                <ExternalLink size={16} aria-hidden="true" />
-                <span>Landing</span>
-              </Link>
-            </div>
-          </div>
-
-          <div className="mt-5">
+          <div className="mt-1">
             <p className="text-xs font-semibold tracking-wide text-muted">NAVEGACIÓN</p>
             <div className="mt-3">
               <DashboardNav />
             </div>
           </div>
-
-        
         </aside>
 
-        {/* ===== BARRA SUPERIOR MÓVIL ===== */}
-        {/* ThemeToggle movido aquí desde el drawer – más limpio y accesible */}
+        {/* ===== HEADER MÓVIL ===== */}
+        {/* Logo + ThemeToggle + botón hamburguesa */}
         <div className="md:hidden flex items-center justify-between">
           <Link href="/dashboard" className="brand">
             <span className="brand-dot" aria-hidden="true" />
@@ -67,15 +52,21 @@ export function DashboardShell({
           </div>
         </div>
 
-        {/* ===== SIDEBAR MÓVIL (DRAWER) ===== */}
+        {/* ===== DRAWER MÓVIL ===== */}
         {mobileOpen && (
           <>
-            <div className="fixed inset-0 z-40 backdrop" onClick={() => setMobileOpen(false)} />
-
+            <div
+              className="fixed inset-0 z-40 backdrop"
+              onClick={() => setMobileOpen(false)}
+            />
             <aside className="fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] drawer">
-              {/* Logo eliminado del drawer – ThemeToggle movido al header móvil */}
+              {/* Cabecera del drawer: link landing + cerrar */}
               <div className="flex items-center justify-between">
-                <Link href="/" className="btn btn-ghost text-sm" aria-label="Ir a la landing">
+                <Link
+                  href="/"
+                  className="btn btn-ghost text-sm"
+                  aria-label="Ir a la landing"
+                >
                   <ExternalLink size={16} aria-hidden="true" />
                   <span>Landing</span>
                 </Link>
@@ -90,8 +81,9 @@ export function DashboardShell({
                 </Button>
               </div>
 
-              <p className="mt-6 text-xs font-semibold tracking-wide text-muted">NAVEGACIÓN</p>
-
+              <p className="mt-6 text-xs font-semibold tracking-wide text-muted">
+                NAVEGACIÓN
+              </p>
               <div className="mt-3">
                 <DashboardNav onNavigate={() => setMobileOpen(false)} />
               </div>

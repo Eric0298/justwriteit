@@ -5,14 +5,12 @@
    THEME TOKENS (Ice Blue / Calm)
 ========================================================= */
 :root {
-  /* Base surfaces */
   --bg: 246 248 252;
   --fg: 15 23 42;
   --muted: 71 85 105;
   --border: 226 232 240;
   --card: 255 255 255;
 
-  /* Brand / accents (ice blue) */
   --primary: 15 23 42;
   --primary-fg: 255 255 255;
 
@@ -22,20 +20,16 @@
 
   --danger: 239 68 68;
 
-  /* Radii */
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 20px;
 
-  /* Shadows (soft) */
   --shadow-sm: 0 1px 2px rgba(2, 6, 23, 0.05);
   --shadow-md: 0 12px 40px rgba(2, 6, 23, 0.12);
 
-  /* Glows (accent) */
   --glow-accent: 0 0 0 4px rgba(56, 189, 248, 0.18);
   --glow-danger: 0 0 0 4px rgba(239, 68, 68, 0.18);
 
-  /* Background gradients */
   --bg-grad-1: linear-gradient(135deg, rgba(56, 189, 248, .10), rgba(99, 102, 241, .08));
   --bg-grad-2:
     radial-gradient(900px 500px at 30% -10%, rgba(56, 189, 248, .16), transparent 60%),
@@ -80,7 +74,6 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Calm background "ambient" */
 body::before {
   content: "";
   position: fixed;
@@ -98,23 +91,20 @@ body::before {
 }
 
 /* =========================================================
-   UTILITIES (custom)
+   UTILITIES
 ========================================================= */
 @layer utilities {
   .text-fg { color: rgb(var(--fg)); }
   .text-muted { color: rgb(var(--muted)); }
-
   .bg-bg { background-color: rgb(var(--bg)); }
   .bg-card { background-color: rgb(var(--card)); }
-
   .border-border { border-color: rgb(var(--border)); }
-
   .text-danger { color: rgb(var(--danger)); }
   .bg-danger { background-color: rgb(var(--danger)); }
 }
 
 /* =========================================================
-   COMPONENT CLASSES
+   COMPONENTS
 ========================================================= */
 @layer components {
   .container-app {
@@ -129,7 +119,6 @@ body::before {
     box-shadow: var(--shadow-sm);
   }
 
-  /* Glass / header surfaces */
   .header-glass {
     border-color: rgb(var(--border));
     background: rgba(var(--bg), 0.72);
@@ -157,11 +146,9 @@ body::before {
   .brand {
     @apply inline-flex items-center gap-2 rounded-full px-2 py-1 transition;
   }
-
   .brand:hover {
     background: rgba(var(--fg), 0.04);
   }
-
   .brand-dot {
     width: 10px;
     height: 10px;
@@ -176,42 +163,46 @@ body::before {
       px-4 py-2 text-sm font-medium transition
       disabled:opacity-50 disabled:pointer-events-none;
   }
-
   .btn-sm {
     @apply px-3 py-1.5 text-xs;
   }
 
+  /*
+   * PRIMARY: texto siempre oscuro (legible sobre el azul claro en light Y dark).
+   * En dark el accent es más claro (#7dd3fc), por lo que texto oscuro sigue siendo OK.
+   */
   .btn-primary {
-    color: rgb(var(--primary-fg));
-    background: linear-gradient(
-      135deg,
-      rgba(var(--accent), 0.95),
-      rgba(var(--accent-2), 0.90)
-    );
-    box-shadow: 0 8px 24px rgba(56, 189, 248, 0.20);
+    color: rgb(3 7 18);
+    background: linear-gradient(135deg, rgb(var(--accent)), rgba(var(--accent-2), 0.85));
+    border: 1px solid rgba(var(--accent), 0.50);
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.30);
+    font-weight: 600;
   }
-
   .btn-primary:hover {
     transform: translateY(-1px);
-    filter: brightness(1.03);
+    filter: brightness(1.05);
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.40);
   }
-
   .btn-primary:active {
     transform: translateY(0px);
     filter: brightness(0.98);
   }
 
+  /*
+   * GHOST: visible en AMBOS modos.
+   * Usa --fg (oscuro en light, claro en dark) para texto y borde.
+   */
   .btn-ghost {
-    background: transparent;
+    background: rgba(var(--fg), 0.05);
     color: rgb(var(--fg));
+    border: 1px solid rgba(var(--fg), 0.20);
   }
-
   .btn-ghost:hover {
-    background: rgba(var(--fg), 0.04);
+    background: rgba(var(--fg), 0.10);
+    border-color: rgba(var(--fg), 0.32);
   }
-
   .btn-ghost:active {
-    background: rgba(var(--fg), 0.06);
+    background: rgba(var(--fg), 0.15);
   }
 
   /* ---- INPUTS / SELECT ---- */
@@ -221,27 +212,22 @@ body::before {
     color: rgb(var(--fg));
     border-color: rgb(var(--border));
   }
-
   .input:hover {
     border-color: rgba(var(--accent), 0.45);
   }
-
   .input:focus {
     outline: none;
     box-shadow: var(--glow-accent);
     border-color: rgba(var(--accent), 0.75);
   }
-
   .label {
     @apply text-sm font-medium;
     color: rgb(var(--muted));
   }
-
   .hint {
     @apply text-xs;
     color: rgb(var(--muted));
   }
-
   select.input option {
     background: rgb(var(--card));
     color: rgb(var(--fg));
@@ -251,32 +237,24 @@ body::before {
   .nav-item {
     color: rgb(var(--muted));
   }
-
   .nav-item:hover {
     background: rgba(var(--fg), 0.04);
     color: rgb(var(--fg));
   }
-
   .nav-item-active {
     color: rgb(var(--fg));
     background: rgba(var(--accent), 0.10);
     border: 1px solid rgba(var(--accent), 0.28);
     box-shadow: 0 10px 30px rgba(56, 189, 248, 0.12);
   }
-
   .nav-icon {
     border-color: rgba(var(--border), 1);
     background: rgba(var(--card), 0.65);
     color: rgb(var(--muted));
   }
-
   .nav-icon-active {
     border-color: rgba(var(--accent), 0.45);
-    background: linear-gradient(
-      135deg,
-      rgba(var(--accent), 0.22),
-      rgba(var(--accent-2), 0.14)
-    );
+    background: linear-gradient(135deg, rgba(var(--accent), 0.22), rgba(var(--accent-2), 0.14));
     color: rgb(var(--fg));
     box-shadow: 0 10px 24px rgba(56, 189, 248, 0.14);
   }
@@ -285,7 +263,6 @@ body::before {
   dialog {
     border-color: rgb(var(--border));
   }
-
   dialog::backdrop {
     background: rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(6px);
@@ -300,7 +277,6 @@ body::before {
       radial-gradient(800px 500px at 50% 90%, rgba(var(--accent), 0.08), transparent 55%),
       rgb(var(--bg));
   }
-
   .auth-card {
     @apply rounded-[var(--radius-lg)] border;
     border-color: rgba(var(--accent), 0.14);
@@ -308,37 +284,29 @@ body::before {
     box-shadow: var(--shadow-md);
     backdrop-filter: blur(10px);
   }
-
   .auth-badge {
     border: 1px solid rgba(var(--accent), 0.20);
     background: linear-gradient(135deg, rgba(var(--accent), 0.18), rgba(var(--card), 0.90));
     box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
   }
-
-  /* ✅ CORREGIDO: eliminado @apply text-muted, reemplazado por color CSS directo */
   .input-icon {
     @apply pointer-events-none absolute left-3 top-[38px];
     color: rgb(var(--muted));
   }
-
   .link-soft {
     @apply font-medium underline underline-offset-4 transition;
   }
-
   .link-soft:hover {
     color: rgb(var(--accent));
   }
-
   .alert {
     @apply rounded-[var(--radius-lg)] border p-3 text-sm;
     background: linear-gradient(180deg, rgba(var(--card), 0.92), rgba(var(--card), 0.98));
   }
-
   .alert-danger {
     border-color: rgba(var(--danger), 0.45);
     color: rgb(var(--danger));
   }
-
   .alert-warn {
     border-color: rgba(var(--accent), 0.25);
     color: rgb(var(--fg));
@@ -348,7 +316,6 @@ body::before {
   .app-shell {
     @apply relative min-h-dvh;
   }
-
   .app-bg {
     @apply pointer-events-none fixed inset-0 -z-10;
     background:
@@ -357,92 +324,84 @@ body::before {
       radial-gradient(850px 520px at 50% 92%, rgba(var(--accent), 0.08), transparent 55%),
       rgb(var(--bg));
   }
-
   .app-header {
     @apply sticky top-0 z-40;
     background: linear-gradient(180deg, rgba(var(--bg), 0.92), rgba(var(--bg), 0.75));
     border-bottom: 1px solid rgba(var(--accent), 0.12);
     backdrop-filter: blur(10px);
   }
-
   .app-brand {
     @apply inline-flex items-center gap-2 rounded-[var(--radius-md)] px-2 py-1 transition;
   }
-
   .app-brand:hover {
     background: rgba(var(--accent), 0.07);
   }
 
+  /* Landing nav pills */
   .nav-pill {
     @apply inline-flex items-center rounded-full px-3 py-1.5 text-sm transition;
     color: rgb(var(--muted));
     border: 1px solid rgba(var(--accent), 0.12);
     background: rgba(var(--card), 0.55);
   }
-
   .nav-pill:hover {
     color: rgb(var(--fg));
     background: rgba(var(--accent), 0.08);
     border-color: rgba(var(--accent), 0.20);
   }
-
+  /* "Crear cuenta": siempre legible */
   .nav-pill-primary {
-    color: rgb(3 7 18);                /* texto oscuro siempre legible */
+    color: rgb(3 7 18);
     background: linear-gradient(135deg, rgb(var(--accent)), rgba(var(--accent-2), 0.85));
     border-color: rgba(var(--accent), 0.60);
     box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
-    font-weight: 500;
+    font-weight: 600;
   }
-
   .nav-pill-primary:hover {
     filter: brightness(1.05);
     box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45);
   }
 
   /* ---- STUDY MODE TOGGLE ---- */
-  /* Botón inactivo del switcher Estudio/Texto con suficiente contraste */
   .study-tab-inactive {
     background: rgba(var(--fg), 0.07);
     color: rgb(var(--fg));
-    border: 1px solid rgba(var(--border), 0.9);
+    border: 1px solid rgb(var(--border));
   }
 
+  /* ---- FOOTER ---- */
   .app-footer {
     @apply mt-10 border-t;
     border-color: rgba(var(--accent), 0.10);
     background: rgba(var(--bg), 0.75);
     backdrop-filter: blur(10px);
   }
-
   .footer-link {
     @apply underline underline-offset-4 transition;
   }
-
   .footer-link:hover {
     color: rgb(var(--accent));
   }
 
+  /* ---- HERO / FEATURES ---- */
   .hero-card {
     @apply rounded-[var(--radius-lg)] border;
     border-color: rgba(var(--accent), 0.14);
     background: linear-gradient(180deg, rgba(var(--card), 0.88), rgba(var(--card), 0.98));
     box-shadow: var(--shadow-md);
   }
-
   .hero-kicker {
     @apply inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs;
     border-color: rgba(var(--accent), 0.18);
     background: rgba(var(--accent), 0.06);
     color: rgb(var(--muted));
   }
-
   .mini-card {
     @apply rounded-[var(--radius-lg)] border;
     border-color: rgba(var(--accent), 0.12);
     background: rgba(var(--card), 0.82);
     box-shadow: var(--shadow-sm);
   }
-
   .feature-card {
     @apply rounded-[var(--radius-lg)] border;
     border-color: rgba(var(--accent), 0.10);
