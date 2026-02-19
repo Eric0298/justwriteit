@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { FileAudio, Mic, History, Shield, Sparkles, ArrowRight } from "lucide-react";
+import { FileAudio, Mic, History, Shield, Sparkles, ArrowRight, GraduationCap, TabletSmartphone, Cog } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Landing",
@@ -111,6 +111,7 @@ export default function LandingPage() {
       <section className="mt-8 grid gap-4 md:grid-cols-3">
         <div className="feature-card p-5">
           <p className="text-sm font-medium">Enfocados en “modo estudio”</p>
+          <GraduationCap size={16} aria-hidden="true" />
           <p className="mt-2 text-sm text-muted">
             Aprende del audio: localiza, lee y repasa por partes
           </p>
@@ -118,6 +119,7 @@ export default function LandingPage() {
 
         <div className="feature-card p-5">
           <p className="text-sm font-medium">100% responsive</p>
+           <TabletSmartphone size={16} aria-hidden="true" />
           <p className="mt-2 text-sm text-muted">
             Pensado para móvil desde el principio.
           </p>
@@ -125,6 +127,7 @@ export default function LandingPage() {
 
         <div className="feature-card p-5">
           <p className="text-sm font-medium">Próximo feat</p>
+           <Cog size={16} aria-hidden="true" />
           <p className="mt-2 text-sm text-muted">
             Traducción de la transcripción. 
           </p>
