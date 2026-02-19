@@ -23,15 +23,19 @@ export function LiveControls(props: {
     boxShadow: "var(--shadow-sm)",
   };
 
+  // Botón ghost con borde y fondo explícito para que sea visible en claro Y oscuro
   const ghostBtnStyle: React.CSSProperties = {
-    border: "1px solid rgba(var(--accent),0.18)",
-    background: "rgba(var(--card),0.72)",
+    border: "1px solid rgba(var(--accent), 0.35)",
+    background: "rgba(var(--fg), 0.06)",
+    color: "rgb(var(--fg))",
   };
 
+  // Botón deshabilitado: contraste suficiente en ambos modos
   const disabledBtnStyle: React.CSSProperties = {
-    border: "1px solid rgba(var(--border), 0.9)",
-    background: "rgba(var(--card),0.55)",
+    border: "1px solid rgba(var(--border), 1)",
+    background: "rgba(var(--fg), 0.08)",
     color: "rgb(var(--muted))",
+    opacity: 0.7,
   };
 
   return (
