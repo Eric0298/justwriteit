@@ -25,7 +25,6 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
 
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const [currentTime, setCurrentTime] = React.useState(0);
-
   const [globalRate, setGlobalRate] = React.useState<number>(1);
   const [loopRate, setLoopRate] = React.useState<number>(1);
 
@@ -52,6 +51,12 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
 
   const canToggle = segments.length > 0;
 
+  /* Estilos del tab activo: fondo azul sólido + texto blanco */
+  const activeTabStyle: React.CSSProperties = {
+    background: "linear-gradient(135deg, rgb(var(--accent)), rgba(var(--accent-2), 0.88))",
+    color: "#ffffff",
+  };
+
   return (
     <div className="mt-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -60,12 +65,7 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
         </h2>
 
         {canToggle && (
-          // ✅ Segmented control – estado inactivo visible con .study-tab-inactive
-          <div
-            className="w-full sm:w-auto"
-            role="tablist"
-            aria-label="Cambiar vista"
-          >
+          <div className="w-full sm:w-auto" role="tablist" aria-label="Cambiar vista">
             <div
               className="flex w-full sm:w-[240px] items-center gap-1 rounded-full border p-1"
               style={{
@@ -80,21 +80,11 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
                 aria-selected={viewMode === "study"}
                 onClick={() => setViewMode("study")}
                 className={[
-                  "flex-1 rounded-full px-3 py-2 text-sm font-medium transition",
+                  "flex-1 rounded-full px-3 py-2 text-sm font-semibold transition",
                   "outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--accent))]",
-                  viewMode === "study"
-                    ? "shadow-sm"
-                    : "study-tab-inactive",
+                  viewMode === "study" ? "shadow-sm" : "study-tab-inactive",
                 ].join(" ")}
-                style={
-                  viewMode === "study"
-                    ? {
-                        background:
-                          "linear-gradient(135deg, rgba(var(--accent), 0.95), rgba(var(--accent-2), 0.88))",
-                        color: "rgb(var(--primary-fg))",
-                      }
-                    : undefined
-                }
+                style={viewMode === "study" ? activeTabStyle : undefined}
               >
                 Estudio
               </button>
@@ -106,21 +96,11 @@ export function TranscriptStudyView({ transcriptText, segments, audioUrl }: Prop
                 aria-selected={viewMode === "text"}
                 onClick={() => setViewMode("text")}
                 className={[
-                  "flex-1 rounded-full px-3 py-2 text-sm font-medium transition",
+                  "flex-1 rounded-full px-3 py-2 text-sm font-semibold transition",
                   "outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--accent))]",
-                  viewMode === "text"
-                    ? "shadow-sm"
-                    : "study-tab-inactive",
+                  viewMode === "text" ? "shadow-sm" : "study-tab-inactive",
                 ].join(" ")}
-                style={
-                  viewMode === "text"
-                    ? {
-                        background:
-                          "linear-gradient(135deg, rgba(var(--accent), 0.95), rgba(var(--accent-2), 0.88))",
-                        color: "rgb(var(--primary-fg))",
-                      }
-                    : undefined
-                }
+                style={viewMode === "text" ? activeTabStyle : undefined}
               >
                 Texto
               </button>
