@@ -1,25 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 160" role="img" aria-label="JustWriteIt">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 180" role="img" aria-label="JustWriteIt">
   <title>JustWriteIt</title>
 
-  <g fill="none" stroke="none">
-    <text
-      x="24"
-      y="118"
-      font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', 'Arial Black', system-ui, sans-serif"
-      font-size="110"
-      font-style="italic"
-      letter-spacing="1"
-      transform="skewX(-12)"
-      fill="currentColor"
-    >JustWriteIt</text>
+  <defs>
+    <style>
+      .main { fill: #1E6BFF; }
+      .accent { fill: #00E676; }
+      .word {
+        fill: #1E6BFF;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Arial Black", sans-serif;
+        font-weight: 900;
+        font-style: italic;
+        letter-spacing: -0.5px;
+      }
+    </style>
+  </defs>
 
-    <path
-      d="M35 132 C180 160, 520 160, 740 120"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="10"
-      stroke-linecap="round"
-      opacity="0.85"
-    />
+  <!-- Wordmark: "JustWrite" -->
+  <text class="word" x="30" y="122" font-size="104">JustWrite</text>
+
+  <!-- "It" MÁS PEGADO y a la misma altura -->
+  <g transform="translate(530 25) skewX(-12)">
+    <!-- Bolígrafo (I) -->
+    <rect class="accent" x="18" y="14" width="24" height="88" rx="10"/>
+    <path class="accent" d="M42 22 C56 26, 56 40, 42 44 L42 37 C47 35, 47 30, 42 28 Z"/>
+    <path class="accent" d="M18 102 L42 102 L30 124 Z"/>
+    <rect x="24" y="22" width="5" height="66" rx="3" fill="#B9FFDA" opacity="0.55"/>
+
+    <!-- 't' alineada a la misma base visual -->
+    <text class="word" x="52" y="98" font-size="104">t</text>
   </g>
 </svg>

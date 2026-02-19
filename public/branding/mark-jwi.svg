@@ -1,16 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="JWI">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 160" role="img" aria-label="JWI">
   <title>JWI</title>
 
-  <text
-    x="18"
-    y="112"
-    font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', 'Arial Black', system-ui, sans-serif"
-    font-size="92"
-    font-style="italic"
-    letter-spacing="2"
-    transform="skewX(-12)"
-    fill="currentColor"
-  >JWI</text>
+  <defs>
+    <style>
+      .main { fill: #1E6BFF; }
+      .accent { fill: #00E676; }
+      .letters {
+        fill: #1E6BFF;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Arial Black", sans-serif;
+        font-weight: 900;
+        font-style: italic;
+        letter-spacing: -2px;
+      }
+    </style>
+  </defs>
 
-  <path d="M18 128 H142" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.85"/>
+  <g transform="translate(14 18) skewX(-12)">
+    <!-- "JW" -->
+    <text class="letters" x="0" y="112" font-size="110">JW</text>
+
+    <!-- "I" como bolígrafo (verde) -->
+    <g transform="translate(170 6)">
+      <rect class="accent" x="18" y="10" width="22" height="88" rx="10"/>
+      <path class="accent" d="M40 18 C52 22, 52 36, 40 40 L40 33 C44 31, 44 26, 40 24 Z"/>
+      <path class="accent" d="M18 98 L40 98 L29 122 Z"/>
+      <rect x="24" y="18" width="4" height="68" rx="3" fill="#B9FFDA" opacity="0.55"/>
+    </g>
+  </g>
 </svg>
