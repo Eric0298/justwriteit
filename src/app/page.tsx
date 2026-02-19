@@ -110,24 +110,27 @@ export default function LandingPage() {
       {/* FEATURES */}
       <section className="mt-8 grid gap-4 md:grid-cols-3">
         <div className="feature-card p-5">
-          <p className="text-sm font-medium">Enfocados en “modo estudio”</p>
-          <GraduationCap size={16} aria-hidden="true" />
+          <p className="text-sm font-medium">
+            <GraduationCap size={16} aria-hidden="true" />
+            Enfocados en “modo estudio”</p>
           <p className="mt-2 text-sm text-muted">
             Aprende del audio: localiza, lee y repasa por partes
           </p>
         </div>
 
         <div className="feature-card p-5">
-          <p className="text-sm font-medium">100% responsive</p>
-           <TabletSmartphone size={16} aria-hidden="true" />
+          <p className="text-sm font-medium">
+            <TabletSmartphone size={16} aria-hidden="true" />
+            100% responsive</p>
           <p className="mt-2 text-sm text-muted">
             Pensado para móvil desde el principio.
           </p>
         </div>
 
         <div className="feature-card p-5">
-          <p className="text-sm font-medium">Próximo feat</p>
-           <Cog size={16} aria-hidden="true" />
+          <p className="text-sm font-medium">
+             <Cog size={16} aria-hidden="true" />
+            Próximo feat</p>
           <p className="mt-2 text-sm text-muted">
             Traducción de la transcripción. 
           </p>
