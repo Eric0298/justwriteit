@@ -85,7 +85,6 @@ export function TranscribeFileForm({
           value={context}
           onChange={(e) => setContext(e.target.value)}
           disabled={isLoading}
-          hint="Esto será útil al conectar un proveedor real."
         />
 
         <Button type="submit" isLoading={isLoading} disabled={isLoading || !file}>
