@@ -445,3 +445,8 @@ body::before {
 
   .feature-card {
     @apply rounded-[var(--radius-lg)] border;
+    border-color: rgba(var(--accent), 0.10);
+    background: rgba(var(--card), 0.78);
+    box-shadow: var(--shadow-sm);
+  }
+}
