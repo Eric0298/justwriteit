@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="JWI">
+  <title>JWI</title>
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="none"/>
+  <g fill="currentColor" transform="skewX(-12)">
+    <text
+      x="8"
+      y="44"
+      font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', 'Arial Black', system-ui, sans-serif"
+      font-size="34"
+      font-style="italic"
+      letter-spacing="1"
+    >JWI</text>
+  </g>
+</svg>

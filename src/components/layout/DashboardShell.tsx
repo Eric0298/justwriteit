@@ -54,10 +54,17 @@ export function DashboardShell({
 
         {/* ===== HEADER MÓVIL ===== */}
         <div className="md:hidden flex items-center justify-between">
-          <Link href="/dashboard" className="brand">
-            <span className="brand-dot" aria-hidden="true" />
-            <span className="font-semibold tracking-tight">JustWriteIt</span>
-          </Link>
+          <Link
+  href="/dashboard"
+  className="brand text-black dark:text-white"
+  aria-label="JustWriteIt Dashboard"
+>
+  <img
+    src="/branding/mark-jwi.svg"
+    alt="JWI"
+    className="h-8 w-8"
+  />
+</Link>
           <div className="flex items-center gap-2">
             <ThemeToggle initialTheme={initialTheme} />
             <Button variant="ghost" onClick={() => setMobileOpen(true)} aria-label="Abrir menú">

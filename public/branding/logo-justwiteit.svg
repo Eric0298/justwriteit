@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 160" role="img" aria-label="JustWriteIt">
+  <title>JustWriteIt</title>
+  <!-- Logo adaptable a tema: usa currentColor -->
+  <g fill="currentColor">
+    <!-- Forma tipo "wordmark" con inclinación deportiva -->
+    <text
+      x="24"
+      y="118"
+      font-family="Impact, Haettenschweiler, 'Arial Narrow Bold', 'Arial Black', system-ui, sans-serif"
+      font-size="110"
+      font-style="italic"
+      letter-spacing="1"
+      transform="skewX(-12)"
+    >JustWriteIt</text>
+
+    <!-- subrayado dinámico (original, no swoosh) -->
+    <path d="M35 132 C180 160, 520 160, 740 120"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="10"
+          stroke-linecap="round"
+          opacity="0.85"/>
+  </g>
+</svg>
