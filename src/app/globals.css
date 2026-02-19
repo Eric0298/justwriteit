@@ -2,7 +2,7 @@
 @reference "tailwindcss";
 
 /* =========================================================
-   THEME TOKENS (Ice Blue / Calm)
+   THEME TOKENS
 ========================================================= */
 :root {
   --bg: 246 248 252;
@@ -10,31 +10,23 @@
   --muted: 71 85 105;
   --border: 226 232 240;
   --card: 255 255 255;
-
   --primary: 15 23 42;
   --primary-fg: 255 255 255;
-
   --accent: 56 189 248;
   --accent-fg: 3 7 18;
   --accent-2: 99 102 241;
-
   --danger: 239 68 68;
-
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 20px;
-
   --shadow-sm: 0 1px 2px rgba(2, 6, 23, 0.05);
   --shadow-md: 0 12px 40px rgba(2, 6, 23, 0.12);
-
   --glow-accent: 0 0 0 4px rgba(56, 189, 248, 0.18);
   --glow-danger: 0 0 0 4px rgba(239, 68, 68, 0.18);
-
   --bg-grad-1: linear-gradient(135deg, rgba(56, 189, 248, .10), rgba(99, 102, 241, .08));
   --bg-grad-2:
     radial-gradient(900px 500px at 30% -10%, rgba(56, 189, 248, .16), transparent 60%),
     radial-gradient(900px 500px at 90% 0%, rgba(99, 102, 241, .10), transparent 60%);
-
   --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial,
     "Apple Color Emoji", "Segoe UI Emoji";
 }
@@ -45,20 +37,15 @@
   --muted: 148 163 184;
   --border: 30 41 59;
   --card: 10 15 26;
-
   --primary: 241 245 249;
   --primary-fg: 8 12 20;
-
   --accent: 125 211 252;
   --accent-fg: 8 12 20;
   --accent-2: 165 180 252;
-
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
   --shadow-md: 0 20px 60px rgba(0, 0, 0, 0.40);
-
   --glow-accent: 0 0 0 4px rgba(125, 211, 252, 0.16);
   --glow-danger: 0 0 0 4px rgba(239, 68, 68, 0.18);
-
   --bg-grad-1: linear-gradient(135deg, rgba(125, 211, 252, .10), rgba(165, 180, 252, .08));
   --bg-grad-2:
     radial-gradient(900px 500px at 25% -10%, rgba(125, 211, 252, .14), transparent 60%),
@@ -111,7 +98,6 @@ body::before {
     @apply mx-auto w-full max-w-6xl px-4;
   }
 
-  /* ---- CARD ---- */
   .card {
     background: rgb(var(--card));
     border-color: rgb(var(--border));
@@ -146,9 +132,7 @@ body::before {
   .brand {
     @apply inline-flex items-center gap-2 rounded-full px-2 py-1 transition;
   }
-  .brand:hover {
-    background: rgba(var(--fg), 0.04);
-  }
+  .brand:hover { background: rgba(var(--fg), 0.04); }
   .brand-dot {
     width: 10px;
     height: 10px;
@@ -163,14 +147,12 @@ body::before {
       px-4 py-2 text-sm font-medium transition
       disabled:opacity-50 disabled:pointer-events-none;
   }
-  .btn-sm {
-    @apply px-3 py-1.5 text-xs;
-  }
+  .btn-sm { @apply px-3 py-1.5 text-xs; }
 
   /*
-   * PRIMARY
-   * En light: accent azul claro → texto oscuro (rgb(3 7 18)) legible ✓
-   * En dark:  accent azul claro (#7dd3fc) → texto oscuro sigue siendo legible ✓
+   * PRIMARY — texto fijo rgb(3 7 18) oscuro.
+   * El accent en light es #38bdf8 y en dark #7dd3fc, ambos son azules claros
+   * sobre los que el texto oscuro es perfectamente legible en ambos modos.
    */
   .btn-primary {
     color: rgb(3 7 18);
@@ -190,11 +172,8 @@ body::before {
   }
 
   /*
-   * GHOST
-   * Usa rgb(var(--fg)) como color de texto:
-   *   - light: --fg = 15 23 42  → texto casi negro  ✓
-   *   - dark:  --fg = 241 245 249 → texto casi blanco ✓
-   * El borde y fondo también usan --fg así se adaptan solos.
+   * GHOST — usa rgb(var(--fg)) que es oscuro en light y claro en dark.
+   * Así el texto es negro en modo claro y BLANCO en modo oscuro automáticamente.
    */
   .btn-ghost {
     background: rgba(var(--fg), 0.05);
@@ -205,46 +184,28 @@ body::before {
     background: rgba(var(--fg), 0.11);
     border-color: rgba(var(--fg), 0.35);
   }
-  .btn-ghost:active {
-    background: rgba(var(--fg), 0.16);
-  }
+  .btn-ghost:active { background: rgba(var(--fg), 0.16); }
 
-  /* ---- INPUTS / SELECT ---- */
+  /* ---- INPUTS ---- */
   .input {
     @apply w-full rounded-[var(--radius-md)] border px-3 py-2 text-sm transition;
     background: rgba(var(--card), 0.80);
     color: rgb(var(--fg));
     border-color: rgb(var(--border));
   }
-  .input:hover {
-    border-color: rgba(var(--accent), 0.45);
-  }
+  .input:hover { border-color: rgba(var(--accent), 0.45); }
   .input:focus {
     outline: none;
     box-shadow: var(--glow-accent);
     border-color: rgba(var(--accent), 0.75);
   }
-  .label {
-    @apply text-sm font-medium;
-    color: rgb(var(--muted));
-  }
-  .hint {
-    @apply text-xs;
-    color: rgb(var(--muted));
-  }
-  select.input option {
-    background: rgb(var(--card));
-    color: rgb(var(--fg));
-  }
+  .label { @apply text-sm font-medium; color: rgb(var(--muted)); }
+  .hint { @apply text-xs; color: rgb(var(--muted)); }
+  select.input option { background: rgb(var(--card)); color: rgb(var(--fg)); }
 
   /* ---- NAV ITEMS ---- */
-  .nav-item {
-    color: rgb(var(--muted));
-  }
-  .nav-item:hover {
-    background: rgba(var(--fg), 0.04);
-    color: rgb(var(--fg));
-  }
+  .nav-item { color: rgb(var(--muted)); }
+  .nav-item:hover { background: rgba(var(--fg), 0.04); color: rgb(var(--fg)); }
   .nav-item-active {
     color: rgb(var(--fg));
     background: rgba(var(--accent), 0.10);
@@ -264,13 +225,8 @@ body::before {
   }
 
   /* ---- Dialog ---- */
-  dialog {
-    border-color: rgb(var(--border));
-  }
-  dialog::backdrop {
-    background: rgba(0, 0, 0, 0.35);
-    backdrop-filter: blur(6px);
-  }
+  dialog { border-color: rgb(var(--border)); }
+  dialog::backdrop { background: rgba(0,0,0,0.35); backdrop-filter: blur(6px); }
 
   /* ---- AUTH ---- */
   .auth-shell {
@@ -291,35 +247,20 @@ body::before {
   .auth-badge {
     border: 1px solid rgba(var(--accent), 0.20);
     background: linear-gradient(135deg, rgba(var(--accent), 0.18), rgba(var(--card), 0.90));
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+    box-shadow: 0 10px 30px rgba(0,0,0,.08);
   }
-  .input-icon {
-    @apply pointer-events-none absolute left-3 top-[38px];
-    color: rgb(var(--muted));
-  }
-  .link-soft {
-    @apply font-medium underline underline-offset-4 transition;
-  }
-  .link-soft:hover {
-    color: rgb(var(--accent));
-  }
+  .input-icon { @apply pointer-events-none absolute left-3 top-[38px]; color: rgb(var(--muted)); }
+  .link-soft { @apply font-medium underline underline-offset-4 transition; }
+  .link-soft:hover { color: rgb(var(--accent)); }
   .alert {
     @apply rounded-[var(--radius-lg)] border p-3 text-sm;
     background: linear-gradient(180deg, rgba(var(--card), 0.92), rgba(var(--card), 0.98));
   }
-  .alert-danger {
-    border-color: rgba(var(--danger), 0.45);
-    color: rgb(var(--danger));
-  }
-  .alert-warn {
-    border-color: rgba(var(--accent), 0.25);
-    color: rgb(var(--fg));
-  }
+  .alert-danger { border-color: rgba(var(--danger), 0.45); color: rgb(var(--danger)); }
+  .alert-warn { border-color: rgba(var(--accent), 0.25); color: rgb(var(--fg)); }
 
-  /* ---- APP SHELL / LANDING ---- */
-  .app-shell {
-    @apply relative min-h-dvh;
-  }
+  /* ---- APP SHELL ---- */
+  .app-shell { @apply relative min-h-dvh; }
   .app-bg {
     @apply pointer-events-none fixed inset-0 -z-10;
     background:
@@ -337,24 +278,16 @@ body::before {
   .app-brand {
     @apply inline-flex items-center gap-2 rounded-[var(--radius-md)] px-2 py-1 transition;
   }
-  .app-brand:hover {
-    background: rgba(var(--accent), 0.07);
-  }
+  .app-brand:hover { background: rgba(var(--accent), 0.07); }
 
-  /* Landing nav pills */
+  /* Landing pills */
   .nav-pill {
     @apply inline-flex items-center rounded-full px-3 py-1.5 text-sm transition;
     color: rgb(var(--muted));
     border: 1px solid rgba(var(--accent), 0.12);
     background: rgba(var(--card), 0.55);
   }
-  .nav-pill:hover {
-    color: rgb(var(--fg));
-    background: rgba(var(--accent), 0.08);
-    border-color: rgba(var(--accent), 0.20);
-  }
-
-  /* "Crear cuenta": texto oscuro siempre legible sobre el accent azul */
+  .nav-pill:hover { color: rgb(var(--fg)); background: rgba(var(--accent), 0.08); border-color: rgba(var(--accent), 0.20); }
   .nav-pill-primary {
     color: rgb(3 7 18);
     background: linear-gradient(135deg, rgb(var(--accent)), rgba(var(--accent-2), 0.85));
@@ -362,13 +295,9 @@ body::before {
     box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
     font-weight: 600;
   }
-  .nav-pill-primary:hover {
-    filter: brightness(1.05);
-    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45);
-  }
+  .nav-pill-primary:hover { filter: brightness(1.05); box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45); }
 
-  /* ---- STUDY MODE TOGGLE ---- */
-  /* Tab inactivo: siempre visible en light y dark */
+  /* ---- STUDY TOGGLE ---- */
   .study-tab-inactive {
     background: rgba(var(--fg), 0.07);
     color: rgb(var(--fg));
@@ -382,14 +311,10 @@ body::before {
     background: rgba(var(--bg), 0.75);
     backdrop-filter: blur(10px);
   }
-  .footer-link {
-    @apply underline underline-offset-4 transition;
-  }
-  .footer-link:hover {
-    color: rgb(var(--accent));
-  }
+  .footer-link { @apply underline underline-offset-4 transition; }
+  .footer-link:hover { color: rgb(var(--accent)); }
 
-  /* ---- HERO / FEATURES ---- */
+  /* ---- CARDS ---- */
   .hero-card {
     @apply rounded-[var(--radius-lg)] border;
     border-color: rgba(var(--accent), 0.14);

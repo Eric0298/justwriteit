@@ -17,12 +17,29 @@ export function DashboardShell({
 }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
+  // Ocultar el header global en móvil para evitar duplicación
+  React.useEffect(() => {
+    const header = document.getElementById("global-header");
+    if (!header) return;
+    // En móvil (< 768px) ocultamos el header global
+    function update() {
+      if (!header) return;
+      header.style.display = window.innerWidth < 768 ? "none" : "";
+    }
+    update();
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      // Restaurar al salir del dashboard
+      if (header) header.style.display = "";
+    };
+  }, []);
+
   return (
     <div className="min-h-screen">
       <div className="container-app grid gap-6 py-6 md:grid-cols-[280px_1fr]">
 
-        {/* ===== SIDEBAR DESKTOP ===== */}
-        {/* Solo contiene la navegación — logo, tema y landing están en el header */}
+        {/* ===== SIDEBAR DESKTOP — solo navegación ===== */}
         <aside className="hidden md:block sidebar-card md:sticky md:top-6 md:h-[calc(100vh-3rem)]">
           <div className="mt-1">
             <p className="text-xs font-semibold tracking-wide text-muted">NAVEGACIÓN</p>
@@ -32,8 +49,7 @@ export function DashboardShell({
           </div>
         </aside>
 
-        {/* ===== HEADER MÓVIL ===== */}
-        {/* Logo + ThemeToggle + botón hamburguesa */}
+        {/* ===== HEADER MÓVIL PROPIO DEL DASHBOARD ===== */}
         <div className="md:hidden flex items-center justify-between">
           <Link href="/dashboard" className="brand">
             <span className="brand-dot" aria-hidden="true" />
@@ -55,22 +71,13 @@ export function DashboardShell({
         {/* ===== DRAWER MÓVIL ===== */}
         {mobileOpen && (
           <>
-            <div
-              className="fixed inset-0 z-40 backdrop"
-              onClick={() => setMobileOpen(false)}
-            />
+            <div className="fixed inset-0 z-40 backdrop" onClick={() => setMobileOpen(false)} />
             <aside className="fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] drawer">
-              {/* Cabecera del drawer: link landing + cerrar */}
               <div className="flex items-center justify-between">
-                <Link
-                  href="/"
-                  className="btn btn-ghost text-sm"
-                  aria-label="Ir a la landing"
-                >
+                <Link href="/" className="btn btn-ghost text-sm" aria-label="Ir a la landing">
                   <ExternalLink size={16} aria-hidden="true" />
                   <span>Landing</span>
                 </Link>
-
                 <Button
                   variant="ghost"
                   className="px-2"
@@ -81,9 +88,7 @@ export function DashboardShell({
                 </Button>
               </div>
 
-              <p className="mt-6 text-xs font-semibold tracking-wide text-muted">
-                NAVEGACIÓN
-              </p>
+              <p className="mt-6 text-xs font-semibold tracking-wide text-muted">NAVEGACIÓN</p>
               <div className="mt-3">
                 <DashboardNav onNavigate={() => setMobileOpen(false)} />
               </div>
@@ -97,4 +102,3 @@ export function DashboardShell({
     </div>
   );
 }
-//Hola
