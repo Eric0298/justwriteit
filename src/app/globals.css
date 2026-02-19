@@ -408,4 +408,5 @@ body::before {
     background: rgba(var(--card), 0.78);
     box-shadow: var(--shadow-sm);
   }
+  /*Hola*/
 }
