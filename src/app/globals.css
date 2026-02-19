@@ -34,6 +34,9 @@
   --btn-primary-bg-from: #38bdf8;   /* sky-400 */
   --btn-primary-bg-to: #818cf8;     /* indigo-400 */
   --btn-primary-color: #03070f;     /* texto casi negro, legible sobre azul claro */
+   /* ---- STUDYVIEW: segmento activo ---- */
+  --seg-active-bg: rgba(186, 230, 253, 0.85); /* azul hielo */
+  --seg-active-fg: #0b1220;                   /* negro suave */
 }
 
 .dark {
@@ -60,6 +63,10 @@
   --btn-primary-bg-from: #38bdf8;   /* mismo azul vivo, no el desaturado del dark accent */
   --btn-primary-bg-to: #6366f1;     /* indigo vivo */
   --btn-primary-color: #ffffff;     /* texto BLANCO en dark — azul vivo + texto blanco = perfecto */
+    /* ---- STUDYVIEW: segmento activo ---- */
+  --seg-active-bg: rgba(59, 130, 246, 0.55);  /* azul eléctrico */
+  --seg-active-fg: #ffffff;                   /* blanco */
+
 }
 
 html { color-scheme: light; }
@@ -347,4 +354,12 @@ body::before {
     background: rgba(var(--card), 0.78);
     box-shadow: var(--shadow-sm);
   }
+    /* ---- STUDYVIEW: segmento activo ---- */
+  .segment-active {
+    background: var(--seg-active-bg);
+  }
+  .segment-active-text {
+    color: var(--seg-active-fg);
+  }
+
 }

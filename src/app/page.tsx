@@ -130,9 +130,9 @@ export default function LandingPage() {
         <div className="feature-card p-5">
           <p className="text-sm font-medium">
              <Cog size={16} aria-hidden="true" />
-            Próximo feat</p>
+            Próximamente</p>
           <p className="mt-2 text-sm text-muted">
-            Traducción de la transcripción. 
+            Traduce tus transcripciones sin salir de justWriteIt. 
           </p>
         </div>
       </section>

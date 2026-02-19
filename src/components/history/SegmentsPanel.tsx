@@ -191,9 +191,15 @@ export function SegmentsPanel(props: {
                       ) : null}
                     </div>
 
-                    <div className="mt-2 whitespace-pre-wrap break-words text-sm text-fg/90">
-                      {s.text}
-                    </div>
+                    <div
+  className={[
+    "mt-2 whitespace-pre-wrap break-words text-sm",
+    isActive ? "segment-active-text" : "text-fg/90",
+  ].join(" ")}
+>
+  {s.text}
+</div>
+
                   </div>
 
                   <div className="flex shrink-0 items-center gap-2">
