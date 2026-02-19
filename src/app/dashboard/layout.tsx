@@ -33,5 +33,13 @@ export default async function DashboardLayout({
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
   const theme = (normalizeTheme(themeCookie) ?? "light") as Theme;
 
-  return <DashboardShell initialTheme={theme}>{children}</DashboardShell>;
+  return (
+    <DashboardShell
+      initialTheme={theme}
+      userName={session.user.name ?? "Usuario"}
+      userEmail={session.user.email ?? ""}
+    >
+      {children}
+    </DashboardShell>
+  );
 }

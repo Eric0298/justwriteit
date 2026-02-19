@@ -29,6 +29,11 @@
     radial-gradient(900px 500px at 90% 0%, rgba(99, 102, 241, .10), transparent 60%);
   --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial,
     "Apple Color Emoji", "Segoe UI Emoji";
+
+  /* Colores fijos del btn-primary — no cambian con el tema */
+  --btn-primary-bg-from: #38bdf8;   /* sky-400 */
+  --btn-primary-bg-to: #818cf8;     /* indigo-400 */
+  --btn-primary-color: #03070f;     /* texto casi negro, legible sobre azul claro */
 }
 
 .dark {
@@ -50,6 +55,11 @@
   --bg-grad-2:
     radial-gradient(900px 500px at 25% -10%, rgba(125, 211, 252, .14), transparent 60%),
     radial-gradient(900px 500px at 90% 0%, rgba(165, 180, 252, .10), transparent 60%);
+
+  /* En dark el gradiente usa azules más brillantes para mayor contraste */
+  --btn-primary-bg-from: #38bdf8;   /* mismo azul vivo, no el desaturado del dark accent */
+  --btn-primary-bg-to: #6366f1;     /* indigo vivo */
+  --btn-primary-color: #ffffff;     /* texto BLANCO en dark — azul vivo + texto blanco = perfecto */
 }
 
 html { color-scheme: light; }
@@ -118,9 +128,7 @@ body::before {
     box-shadow: var(--shadow-sm);
   }
 
-  .backdrop {
-    @apply bg-black/35 backdrop-blur-sm;
-  }
+  .backdrop { @apply bg-black/35 backdrop-blur-sm; }
 
   .drawer {
     background: rgba(var(--card), 0.85);
@@ -129,14 +137,10 @@ body::before {
   }
 
   /* ---- BRAND ---- */
-  .brand {
-    @apply inline-flex items-center gap-2 rounded-full px-2 py-1 transition;
-  }
+  .brand { @apply inline-flex items-center gap-2 rounded-full px-2 py-1 transition; }
   .brand:hover { background: rgba(var(--fg), 0.04); }
   .brand-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
+    width: 10px; height: 10px; border-radius: 999px;
     background: linear-gradient(135deg, rgb(var(--accent)), rgb(var(--accent-2)));
     box-shadow: 0 0 0 3px rgba(var(--accent), 0.18);
   }
@@ -150,30 +154,31 @@ body::before {
   .btn-sm { @apply px-3 py-1.5 text-xs; }
 
   /*
-   * PRIMARY — texto fijo rgb(3 7 18) oscuro.
-   * El accent en light es #38bdf8 y en dark #7dd3fc, ambos son azules claros
-   * sobre los que el texto oscuro es perfectamente legible en ambos modos.
+   * PRIMARY
+   * Usa variables CSS fijas (no dependen del tema) definidas arriba.
+   * Light: texto oscuro sobre azul claro  ✓
+   * Dark:  texto BLANCO sobre azul vivo   ✓
    */
   .btn-primary {
-    color: rgb(3 7 18);
-    background: linear-gradient(135deg, rgb(var(--accent)), rgba(var(--accent-2), 0.85));
-    border: 1px solid rgba(var(--accent), 0.50);
+    color: var(--btn-primary-color);
+    background: linear-gradient(135deg, var(--btn-primary-bg-from), var(--btn-primary-bg-to));
+    border: 1px solid rgba(56, 189, 248, 0.50);
     box-shadow: 0 4px 14px rgba(56, 189, 248, 0.30);
     font-weight: 600;
   }
   .btn-primary:hover {
     transform: translateY(-1px);
-    filter: brightness(1.05);
-    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.40);
+    filter: brightness(1.08);
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45);
   }
   .btn-primary:active {
     transform: translateY(0px);
-    filter: brightness(0.98);
+    filter: brightness(0.96);
   }
 
   /*
-   * GHOST — usa rgb(var(--fg)) que es oscuro en light y claro en dark.
-   * Así el texto es negro en modo claro y BLANCO en modo oscuro automáticamente.
+   * GHOST
+   * rgb(var(--fg)): oscuro en light, BLANCO en dark → siempre legible.
    */
   .btn-ghost {
     background: rgba(var(--fg), 0.05);
@@ -288,13 +293,16 @@ body::before {
     background: rgba(var(--card), 0.55);
   }
   .nav-pill:hover { color: rgb(var(--fg)); background: rgba(var(--accent), 0.08); border-color: rgba(var(--accent), 0.20); }
+
+  /* "Crear cuenta" — siempre azul vivo con texto legible */
   .nav-pill-primary {
-    color: rgb(3 7 18);
-    background: linear-gradient(135deg, rgb(var(--accent)), rgba(var(--accent-2), 0.85));
-    border-color: rgba(var(--accent), 0.60);
+    color: #03070f;
+    background: linear-gradient(135deg, #38bdf8, rgba(99, 102, 241, 0.85));
+    border-color: rgba(56, 189, 248, 0.60);
     box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
     font-weight: 600;
   }
+  .dark .nav-pill-primary { color: #ffffff; }
   .nav-pill-primary:hover { filter: brightness(1.05); box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45); }
 
   /* ---- STUDY TOGGLE ---- */
@@ -314,7 +322,7 @@ body::before {
   .footer-link { @apply underline underline-offset-4 transition; }
   .footer-link:hover { color: rgb(var(--accent)); }
 
-  /* ---- CARDS ---- */
+  /* ---- LANDING CARDS ---- */
   .hero-card {
     @apply rounded-[var(--radius-lg)] border;
     border-color: rgba(var(--accent), 0.14);
