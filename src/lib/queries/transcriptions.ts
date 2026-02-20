@@ -1,11 +1,10 @@
-import { query } from "@/lib/db";
+import { query, type DbValue } from "@/lib/db";
 
 export type TranscriptionType = "file" | "live";
 export type TranscriptionStatus = "pending" | "processing" | "done" | "failed";
 export type NotificationStatus = "none" | "pending" | "sent" | "failed";
 
-// JSONB array (segments)
-export type TranscriptionSegments = unknown[]; // o tiparlo más fuerte si quieres
+export type TranscriptionSegments = unknown[]; 
 
 export type TranscriptionRow = {
   id: string;
@@ -86,7 +85,7 @@ export async function setTranscriptText(input: {
   duration?: number | null;
   audioFilename?: string | null;
   audioUrl?: string | null;
-  segmentsJson?: string | null; // string JSON array (para castear a jsonb)
+  segmentsJson?: string | null; 
 }): Promise<TranscriptionRow | null> {
   const res = await query<TranscriptionRow>(
     `
@@ -138,16 +137,25 @@ export async function listUserTranscriptions(input: {
   userId: string;
   limit?: number;
   offset?: number;
+  search?: string;
 }): Promise<TranscriptionRow[]> {
+  const params: DbValue[] = [input.userId, input.limit ?? 20, input.offset ?? 0];
+
+  const searchClause =
+    input.search
+      ? `AND audio_filename ILIKE $${params.push("%" + input.search + "%")}`
+      : "";
+
   const res = await query<TranscriptionRow>(
     `
     SELECT ${SELECT_COLUMNS}
     FROM transcriptions
     WHERE user_id = $1
+      ${searchClause}
     ORDER BY created_at DESC
     LIMIT $2 OFFSET $3
     `,
-    [input.userId, input.limit ?? 20, input.offset ?? 0]
+    params
   );
 
   return res.rows;
