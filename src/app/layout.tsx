@@ -33,20 +33,13 @@ export const metadata: Metadata = {
     title: siteName,
     description: siteDescription,
     url: "/",
-    images: [
-      {
-        url: "https://justwriteit.app/og.png",
-        width: 1200,
-        height: 630,
-        alt: "JustWriteIt",
-      },
-    ],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "JustWriteIt" }],
   },
   twitter: {
     card: "summary_large_image",
     title: siteName,
     description: siteDescription,
-    images: ["https://justwriteit.app/og.png"],
+    images: ["/og.png"],
   },
   robots: {
     index: true,

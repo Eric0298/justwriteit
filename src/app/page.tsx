@@ -13,22 +13,43 @@ import {
   Cog,
 } from "lucide-react";
 
+const siteName = "JustWriteIt";
+const appUrl = "https://justwriteit.app";
+
+const title = "JustWriteIt — Transcribe audio a texto con IA";
+const description =
+  "De audio a texto, sin complicaciones. Sube un audio o graba en vivo. Guarda todo en tu historial y vuelve cuando quieras. Activa el modo estudio para practicar idiomas con precisión.";
+
 export const metadata: Metadata = {
-  title: "Transcribe audio a texto automáticamente",
-  description:
-    "JustWriteIt convierte cualquier audio o voz en vivo a texto con IA. Sube mp3, wav o graba en directo. Historial, modo estudio y descarga incluidos. Gratis.",
+  title,
+  description,
   alternates: { canonical: "/" },
+
   openGraph: {
-    title: "JustWriteIt — Transcribe audio a texto con IA",
-    description:
-      "Convierte audio a texto en segundos. Sube un archivo o graba en vivo, revisa tu historial y estudia con el modo karaoke.",
-    url: "/",
+    type: "website",
+    locale: "es_ES",
+    siteName,
+    title,
+    description,
+    url: appUrl,
+    images: [
+      {
+        // IMPORTANTE: URL absoluta o relativa con metadataBase. Aquí la ponemos absoluta.
+        url: `${appUrl}/og.png`,
+        width: 1200,
+        height: 630,
+        alt: "JustWriteIt",
+      },
+    ],
   },
+
   twitter: {
-    title: "JustWriteIt — Transcribe audio a texto con IA",
-    description:
-      "Convierte audio a texto en segundos. Sube un archivo o graba en vivo, revisa tu historial y estudia con el modo karaoke.",
+    card: "summary_large_image",
+    title,
+    description,
+    images: [`${appUrl}/og.png`],
   },
+
   keywords: [
     "transcribir audio a texto",
     "transcripción automática",
@@ -164,12 +185,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SEO TEXT BLOCK — ayuda a Google a entender de qué va la página */}
-      <section className="mt-10 rounded-[var(--radius-lg)] border p-6 text-sm text-muted leading-relaxed"
-        style={{ borderColor: "rgba(var(--accent),0.12)" }}>
-        <h2 className="text-base font-semibold text-fg mb-3">
-          ¿Qué es JustWriteIt?
-        </h2>
+      {/* SEO TEXT BLOCK */}
+      <section
+        className="mt-10 rounded-[var(--radius-lg)] border p-6 text-sm text-muted leading-relaxed"
+        style={{ borderColor: "rgba(var(--accent),0.12)" }}
+      >
+        <h2 className="text-base font-semibold text-fg mb-3">¿Qué es JustWriteIt?</h2>
         <p>
           JustWriteIt es una herramienta online para <strong>transcribir audio a texto</strong> de forma
           automática usando inteligencia artificial. Puedes subir archivos de audio en formatos como
