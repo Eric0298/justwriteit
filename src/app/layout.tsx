@@ -62,7 +62,11 @@ export default async function RootLayout({
   const user = session?.user;
 
   return (
-    <html lang="es" className={theme === "dark" ? "dark" : ""} suppressHydrationWarning>
+    <html
+      lang="es"
+      className={theme === "dark" ? "dark" : ""}
+      suppressHydrationWarning
+    >
       <body className="min-h-dvh antialiased">
         <AppProviders>
           <div className="app-shell">
@@ -75,41 +79,73 @@ export default async function RootLayout({
                   className="app-brand text-black dark:text-white"
                   aria-label="JustWriteIt Home"
                 >
+                  {/* MÓVIL: logo pequeño */}
+                  <img
+                    src="/branding/logo-mark-wji.svg"
+                    alt="JWI"
+                    className="h-7 w-auto md:hidden"
+                  />
+
+                  {/* DESKTOP: logo completo */}
                   <img
                     src="/branding/logo-justwriteit.svg"
                     alt="JustWriteIt"
-                    className="h-7 w-auto"
+                    className="hidden h-7 w-auto md:block"
                   />
                 </Link>
 
                 {/* Desktop nav */}
-                <nav className="hidden items-center gap-2 md:flex" aria-label="Navegación principal">
-                  <Link className="nav-pill" href="/">Inicio</Link>
-                  <Link className="nav-pill" href="/dashboard">Dashboard</Link>
-                  <span className="mx-1 h-4 w-px bg-[rgb(var(--border))]" aria-hidden="true" />
+                <nav
+                  className="hidden items-center gap-2 md:flex"
+                  aria-label="Navegación principal"
+                >
+                  <Link className="nav-pill" href="/">
+                    Inicio
+                  </Link>
+                  <Link className="nav-pill" href="/dashboard">
+                    Dashboard
+                  </Link>
+                  <span
+                    className="mx-1 h-4 w-px bg-[rgb(var(--border))]"
+                    aria-hidden="true"
+                  />
 
                   {user ? (
                     <UserMenu name={user.name ?? "Usuario"} email={user.email ?? ""} />
                   ) : (
                     <>
-                      <Link className="nav-pill" href="/login">Login</Link>
-                      <Link className="nav-pill nav-pill-primary" href="/register">Crear cuenta</Link>
+                      <Link className="nav-pill" href="/login">
+                        Login
+                      </Link>
+                      <Link className="nav-pill nav-pill-primary" href="/register">
+                        Crear cuenta
+                      </Link>
                     </>
                   )}
 
-                  <span className="mx-1 h-4 w-px bg-[rgb(var(--border))]" aria-hidden="true" />
+                  <span
+                    className="mx-1 h-4 w-px bg-[rgb(var(--border))]"
+                    aria-hidden="true"
+                  />
                   <HeaderThemeToggle initialTheme={theme} />
                 </nav>
 
                 {/* Mobile nav */}
-                <nav className="flex items-center gap-2 md:hidden global-header-mobile-nav" aria-label="Navegación móvil">
+                <nav
+                  className="flex items-center gap-2 md:hidden global-header-mobile-nav"
+                  aria-label="Navegación móvil"
+                >
                   <HeaderThemeToggle initialTheme={theme} />
                   {user ? (
                     <UserMenu name={user.name ?? "Usuario"} email={user.email ?? ""} />
                   ) : (
                     <>
-                      <Link className="nav-pill" href="/dashboard">Dashboard</Link>
-                      <Link className="nav-pill nav-pill-primary" href="/login">Login</Link>
+                      <Link className="nav-pill" href="/dashboard">
+                        Dashboard
+                      </Link>
+                      <Link className="nav-pill nav-pill-primary" href="/login">
+                        Login
+                      </Link>
                     </>
                   )}
                 </nav>
@@ -122,9 +158,17 @@ export default async function RootLayout({
               <div className="container-app py-8 text-xs text-muted flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <p>© {new Date().getFullYear()} JustWriteIt</p>
                 <div className="flex gap-3">
-                  <Link className="footer-link" href="/">Inicio</Link>
-                  <Link className="footer-link" href="/dashboard">Dashboard</Link>
-                  {!user && <Link className="footer-link" href="/login">Login</Link>}
+                  <Link className="footer-link" href="/">
+                    Inicio
+                  </Link>
+                  <Link className="footer-link" href="/dashboard">
+                    Dashboard
+                  </Link>
+                  {!user && (
+                    <Link className="footer-link" href="/login">
+                      Login
+                    </Link>
+                  )}
                 </div>
               </div>
             </footer>
