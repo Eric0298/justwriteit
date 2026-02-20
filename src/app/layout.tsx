@@ -81,7 +81,7 @@ export default async function RootLayout({
                 >
                   {/* MÓVIL: logo pequeño */}
                   <img
-                    src="/branding/mark-wji.svg"
+                    src="/branding/mark-jwi.svg"
                     alt="JWI"
                     className="h-7 w-auto md:hidden"
                   />
