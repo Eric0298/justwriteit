@@ -9,7 +9,7 @@ import {
   type TranscriptionRow,
 } from "@/lib/queries/transcriptions";
 import { getUserById } from "@/lib/queries/users";
-import { notifyTranscriptionCompleted } from "@/lib/n8n";
+import { notifyTranscriptionCompleted } from "@/lib/mailer";
 
 export const runtime = "nodejs";
 
