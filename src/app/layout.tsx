@@ -10,8 +10,12 @@ import { auth } from "@/../auth";
 import { UserMenu } from "@/components/ui/UserMenu";
 
 const siteName = "JustWriteIt";
-const siteDescription = "Transcribe cualquier audio a texto.";
-const appUrl = process.env.APP_BASE_URL ?? "http://localhost:3000";
+const siteDescription =
+  "Transcribe cualquier audio a texto con IA. Sube archivos mp3, wav o graba en vivo. Rápido, simple y con historial incluido.";
+const appUrl =
+  process.env.APP_BASE_URL ??
+  process.env.APP_URL ??
+  "https://justwriteit.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
@@ -83,7 +87,7 @@ export default async function RootLayout({
 
                 {/* Desktop nav */}
                 <nav className="hidden items-center gap-2 md:flex" aria-label="Navegación principal">
-                  <Link className="nav-pill" href="/">Landing</Link>
+                  <Link className="nav-pill" href="/">Inicio</Link>
                   <Link className="nav-pill" href="/dashboard">Dashboard</Link>
                   <span className="mx-1 h-4 w-px bg-[rgb(var(--border))]" aria-hidden="true" />
 
@@ -100,7 +104,7 @@ export default async function RootLayout({
                   <HeaderThemeToggle initialTheme={theme} />
                 </nav>
 
-                {/* Mobile nav — solo visible fuera del dashboard */}
+                {/* Mobile nav */}
                 <nav className="flex items-center gap-2 md:hidden global-header-mobile-nav" aria-label="Navegación móvil">
                   <HeaderThemeToggle initialTheme={theme} />
                   {user ? (
@@ -119,9 +123,9 @@ export default async function RootLayout({
 
             <footer className="app-footer">
               <div className="container-app py-8 text-xs text-muted flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <p>© {new Date().getFullYear()} JustWriteIt · Ice UI</p>
+                <p>© {new Date().getFullYear()} JustWriteIt</p>
                 <div className="flex gap-3">
-                  <Link className="footer-link" href="/">Home</Link>
+                  <Link className="footer-link" href="/">Inicio</Link>
                   <Link className="footer-link" href="/dashboard">Dashboard</Link>
                   {!user && <Link className="footer-link" href="/login">Login</Link>}
                 </div>

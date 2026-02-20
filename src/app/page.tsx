@@ -1,24 +1,44 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { FileAudio, Mic, History, Shield, Sparkles, ArrowRight, GraduationCap, TabletSmartphone, Cog } from "lucide-react";
+import {
+  FileAudio,
+  Mic,
+  History,
+  Shield,
+  Sparkles,
+  ArrowRight,
+  GraduationCap,
+  TabletSmartphone,
+  Cog,
+} from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Landing",
+  title: "Transcribe audio a texto automáticamente",
   description:
-    "Transcribe archivos o voz en vivo y guarda todo en tu historial. JustWriteIt: rápido, simple y listo para crecer.",
+    "JustWriteIt convierte cualquier audio o voz en vivo a texto con IA. Sube mp3, wav o graba en directo. Historial, modo estudio y descarga incluidos. Gratis.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "JustWriteIt",
+    title: "JustWriteIt — Transcribe audio a texto con IA",
     description:
-      "Transcribe archivos o voz en vivo y guarda todo en tu historial. Rápido, simple y listo para crecer.",
+      "Convierte audio a texto en segundos. Sube un archivo o graba en vivo, revisa tu historial y estudia con el modo karaoke.",
     url: "/",
   },
   twitter: {
-    title: "JustWriteIt",
+    title: "JustWriteIt — Transcribe audio a texto con IA",
     description:
-      "Transcribe archivos o voz en vivo y guarda todo en tu historial. Rápido, simple y listo para crecer.",
+      "Convierte audio a texto en segundos. Sube un archivo o graba en vivo, revisa tu historial y estudia con el modo karaoke.",
   },
+  keywords: [
+    "transcribir audio a texto",
+    "transcripción automática",
+    "transcripción online",
+    "convertir audio a texto",
+    "transcripción en español",
+    "transcribir mp3",
+    "transcribir voz",
+    "speech to text español",
+  ],
 };
 
 export default function LandingPage() {
@@ -58,14 +78,18 @@ export default function LandingPage() {
             </div>
 
             <div className="mt-6 flex flex-wrap items-center gap-3 text-xs text-muted">
-              <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1"
-                    style={{ borderColor: "rgba(var(--accent),0.18)" }}>
+              <span
+                className="inline-flex items-center gap-2 rounded-full border px-3 py-1"
+                style={{ borderColor: "rgba(var(--accent),0.18)" }}
+              >
                 <Shield size={14} aria-hidden="true" />
                 Auth + DB + seguridad
               </span>
 
-              <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1"
-                    style={{ borderColor: "rgba(var(--accent),0.18)" }}>
+              <span
+                className="inline-flex items-center gap-2 rounded-full border px-3 py-1"
+                style={{ borderColor: "rgba(var(--accent),0.18)" }}
+              >
                 <Sparkles size={14} aria-hidden="true" />
                 UI hielo (claro/oscuro)
               </span>
@@ -112,16 +136,18 @@ export default function LandingPage() {
         <div className="feature-card p-5">
           <p className="text-sm font-medium">
             <GraduationCap size={16} aria-hidden="true" />
-            Enfocados en “modo estudio”</p>
+            Enfocados en &ldquo;modo estudio&rdquo;
+          </p>
           <p className="mt-2 text-sm text-muted">
-            Aprende del audio: localiza, lee y repasa por partes
+            Aprende del audio: localiza, lee y repasa por partes.
           </p>
         </div>
 
         <div className="feature-card p-5">
           <p className="text-sm font-medium">
             <TabletSmartphone size={16} aria-hidden="true" />
-            100% responsive</p>
+            100% responsive
+          </p>
           <p className="mt-2 text-sm text-muted">
             Pensado para móvil desde el principio.
           </p>
@@ -129,12 +155,33 @@ export default function LandingPage() {
 
         <div className="feature-card p-5">
           <p className="text-sm font-medium">
-             <Cog size={16} aria-hidden="true" />
-            Próximamente</p>
+            <Cog size={16} aria-hidden="true" />
+            Próximamente
+          </p>
           <p className="mt-2 text-sm text-muted">
-            Traduce tus transcripciones sin salir de justWriteIt. 
+            Traduce tus transcripciones sin salir de JustWriteIt.
           </p>
         </div>
+      </section>
+
+      {/* SEO TEXT BLOCK — ayuda a Google a entender de qué va la página */}
+      <section className="mt-10 rounded-[var(--radius-lg)] border p-6 text-sm text-muted leading-relaxed"
+        style={{ borderColor: "rgba(var(--accent),0.12)" }}>
+        <h2 className="text-base font-semibold text-fg mb-3">
+          ¿Qué es JustWriteIt?
+        </h2>
+        <p>
+          JustWriteIt es una herramienta online para <strong>transcribir audio a texto</strong> de forma
+          automática usando inteligencia artificial. Puedes subir archivos de audio en formatos como
+          mp3, wav o m4a, o grabar directamente desde el micrófono para obtener una transcripción
+          en tiempo real.
+        </p>
+        <p className="mt-3">
+          Ideal para estudiantes que quieren repasar clases, profesionales que necesitan transcribir
+          reuniones, o cualquier persona que trabaje con audio en español u otros idiomas.
+          Todas tus transcripciones quedan guardadas en tu historial personal para que puedas
+          acceder a ellas cuando quieras.
+        </p>
       </section>
     </main>
   );
