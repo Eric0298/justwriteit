@@ -10,10 +10,9 @@ export default function LandingScreenshots() {
     <section>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight">Así se ve por dentro</h2>
+          <h2 className="text-xl font-semibold tracking-tight">Un vistazo rápido</h2>
           <p className="mt-1 text-sm text-muted max-w-[80ch]">
-            Interfaz “UI hielo” en claro/oscuro, pensada para trabajar rápido: transcribir,
-            revisar y volver al historial cuando quieras.
+            Explora la app en claro/oscuro: transcribe, revisa y vuelve al historial cuando quieras.
           </p>
         </div>
       </div>
@@ -33,9 +32,6 @@ export default function LandingScreenshots() {
         ))}
       </div>
 
-      <p className="mt-3 text-xs text-muted">
-        Tip: si alguna captura se ve muy “alta”, recórtala a un formato similar antes de subirla.
-      </p>
     </section>
   );
 }
