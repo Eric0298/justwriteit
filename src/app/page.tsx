@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 const siteName = "JustWriteIt";
-const appUrl = "https://justwriteit.app";
+const appUrl = "https://www.justwriteit.app";
 
 const title = "JustWriteIt — Transcribe audio a texto con IA";
 const description =
@@ -26,29 +26,30 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 
   openGraph: {
-    type: "website",
-    locale: "es_ES",
-    siteName,
-    title,
-    description,
-    url: appUrl,
-    images: [
-      {
-        // IMPORTANTE: URL absoluta o relativa con metadataBase. Aquí la ponemos absoluta.
-        url: `${appUrl}/og.png`,
-        width: 1200,
-        height: 630,
-        alt: "JustWriteIt",
-      },
-    ],
-  },
+  type: "website",
+  locale: "es_ES",
+  siteName: "JustWriteIt",
+  title: "JustWriteIt — Transcribe audio a texto con IA",
+  description:
+    "De audio a texto, sin complicaciones. Sube un audio o graba en vivo. Guarda todo en tu historial y vuelve cuando quieras. Activa el modo estudio para practicar idiomas con precisión.",
+  url: appUrl,
+  images: [
+    {
+      url: `${appUrl}/og.png`,
+      width: 1200,
+      height: 630,
+      alt: "JustWriteIt",
+    },
+  ],
+},
 
   twitter: {
-    card: "summary_large_image",
-    title,
-    description,
-    images: [`${appUrl}/og.png`],
-  },
+  card: "summary_large_image",
+  title: "JustWriteIt — Transcribe audio a texto con IA",
+  description:
+    "De audio a texto, sin complicaciones. Sube un audio o graba en vivo. Guarda todo en tu historial y vuelve cuando quieras. Activa el modo estudio para practicar idiomas con precisión.",
+  images: [`${appUrl}/og.png`],
+},
 
   keywords: [
     "transcribir audio a texto",

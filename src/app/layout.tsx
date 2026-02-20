@@ -12,10 +12,7 @@ import { UserMenu } from "@/components/ui/UserMenu";
 const siteName = "JustWriteIt";
 const siteDescription =
   "Transcribe cualquier audio a texto con IA. Sube archivos mp3, wav o graba en vivo. Rápido, simple y con historial incluido.";
-const appUrl =
-  process.env.APP_BASE_URL ??
-  process.env.APP_URL ??
-  "https://justwriteit.app";
+const appUrl = "https://www.justwriteit.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
