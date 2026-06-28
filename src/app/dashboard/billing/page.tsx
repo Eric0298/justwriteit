@@ -2,7 +2,12 @@ import { auth } from "@/../auth";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { BillingActionButton } from "@/components/billing/BillingActionButton";
-import { PLAN_LIMITS, normalizePlan, type PlanId } from "@/lib/billing/plans";
+import {
+  PLAN_LIMITS,
+  isPaidPlan,
+  normalizePlan,
+  type PlanId,
+} from "@/lib/billing/plans";
 import { getBillingProfile, getUsageStatus } from "@/lib/queries/billing";
 import { CheckCircle2, Crown, Gauge, ShieldCheck } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -37,6 +42,8 @@ export default async function BillingPage({
 
   const currentPlan = normalizePlan(profile.plan);
   const message = checkoutMessage(sp.checkout);
+  const hasPaidSubscription =
+    isPaidPlan(currentPlan) && Boolean(profile.stripe_customer_id);
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -138,6 +145,10 @@ export default async function BillingPage({
                   </Badge>
                 ) : isCurrent ? (
                   <Badge variant="accent">Suscripcion activa</Badge>
+                ) : hasPaidSubscription ? (
+                  <BillingActionButton mode="portal">
+                    Cambiar a {limits.label}
+                  </BillingActionButton>
                 ) : (
                   <BillingActionButton mode="checkout" plan={plan}>
                     Actualizar a {limits.label}
@@ -151,4 +162,3 @@ export default async function BillingPage({
     </div>
   );
 }
-

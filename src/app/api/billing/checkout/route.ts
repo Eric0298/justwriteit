@@ -1,6 +1,6 @@
 import { auth } from "@/../auth";
 import { createCheckoutSession } from "@/lib/billing/stripe";
-import { normalizePlan } from "@/lib/billing/plans";
+import { isPaidPlan, normalizePlan } from "@/lib/billing/plans";
 import { getBillingProfile } from "@/lib/queries/billing";
 import { getClientIp } from "@/lib/security/ip";
 import { rateLimit } from "@/lib/security/rateLimit";
@@ -45,6 +45,18 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: "Usuario no encontrado." }, { status: 404 });
   }
 
+  const currentPlan = normalizePlan(profile.plan);
+  if (isPaidPlan(currentPlan) && profile.stripe_customer_id) {
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "Ya tienes una suscripcion activa. Usa el portal de Stripe para cambiar de plan.",
+      },
+      { status: 409 }
+    );
+  }
+
   try {
     const checkout = await createCheckoutSession({
       userId: profile.id,
@@ -60,4 +72,3 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: message }, { status: 500 });
   }
 }
-

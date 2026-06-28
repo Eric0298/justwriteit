@@ -99,6 +99,7 @@ Consulta:
 
 - `SECURITY_CHECKLIST.md`
 - `USAGE_LIMITS.md`
+- `FREEMIUM_GO_LIVE_GUIDE.md`
 
 ## Scripts
 
@@ -106,9 +107,9 @@ Consulta:
 npm run dev
 npm run lint
 npm run build
+npm run check:freemium
 ```
 
 ## Autor
 
 Eric Mancebo Muminhodzic
-
