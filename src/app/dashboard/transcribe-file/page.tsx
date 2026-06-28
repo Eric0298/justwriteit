@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { TranscriptionProgress } from "@/components/transcribe/TranscriptionProgress";
 import { TranscribeFileForm } from "@/components/transcribe/TranscribeFileForm";
 import { TranscriptionResultCard } from "@/components/transcribe/TranscriptionResultCard";
@@ -12,8 +11,9 @@ export default function TranscribeFilePage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <TranscribeFileForm
-        statusBadge={t.result?.status ?? "—"}
+        statusBadge={t.result?.status ?? "-"}
         isLoading={t.isLoading}
+        usage={t.usage}
         file={t.file}
         setFile={t.setFile}
         language={t.language}
@@ -42,3 +42,4 @@ export default function TranscribeFilePage() {
     </div>
   );
 }
+

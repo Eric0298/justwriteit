@@ -15,9 +15,12 @@ export type TranscriptionRow = {
   audio_filename: string | null;
   audio_url: string | null;
   duration: number | null;
+  file_size_bytes: number | null;
   transcript_text: string | null;
   segments: TranscriptionSegments | null;
   created_at: string;
+  is_free_usage: boolean;
+  plan: string;
 
   notification_status: NotificationStatus;
   notification_error: string | null;
@@ -25,7 +28,8 @@ export type TranscriptionRow = {
 
 const SELECT_COLUMNS = `
   id, user_id, type, language, status,
-  audio_filename, audio_url, duration, transcript_text, segments, created_at,
+  audio_filename, audio_url, duration, file_size_bytes, transcript_text, segments, created_at,
+  is_free_usage, plan,
   notification_status, notification_error
 `;
 
@@ -37,13 +41,17 @@ export async function createTranscription(input: {
   audioFilename?: string | null;
   duration?: number | null;
   transcriptText?: string | null;
+  fileSizeBytes?: number | null;
+  isFreeUsage?: boolean;
+  plan?: string;
 }): Promise<TranscriptionRow> {
   const res = await query<TranscriptionRow>(
     `
     INSERT INTO transcriptions (
-      user_id, type, language, status, audio_filename, duration, transcript_text
+      user_id, type, language, status, audio_filename, duration, transcript_text,
+      file_size_bytes, is_free_usage, plan
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     RETURNING ${SELECT_COLUMNS}
     `,
     [
@@ -54,6 +62,9 @@ export async function createTranscription(input: {
       input.audioFilename ?? null,
       input.duration ?? null,
       input.transcriptText ?? null,
+      input.fileSizeBytes ?? null,
+      input.isFreeUsage ?? true,
+      input.plan ?? "FREE",
     ]
   );
 
@@ -86,6 +97,7 @@ export async function setTranscriptText(input: {
   audioFilename?: string | null;
   audioUrl?: string | null;
   segmentsJson?: string | null; 
+  fileSizeBytes?: number | null;
 }): Promise<TranscriptionRow | null> {
   const res = await query<TranscriptionRow>(
     `
@@ -95,8 +107,9 @@ export async function setTranscriptText(input: {
         audio_filename = COALESCE($3, audio_filename),
         audio_url = COALESCE($4, audio_url),
         segments = COALESCE($5::jsonb, segments),
+        file_size_bytes = COALESCE($6, file_size_bytes),
         status = 'done'
-    WHERE id = $6 AND user_id = $7
+    WHERE id = $7 AND user_id = $8
     RETURNING ${SELECT_COLUMNS}
     `,
     [
@@ -105,6 +118,7 @@ export async function setTranscriptText(input: {
       input.audioFilename ?? null,
       input.audioUrl ?? null,
       input.segmentsJson ?? null,
+      input.fileSizeBytes ?? null,
       input.id,
       input.userId,
     ]

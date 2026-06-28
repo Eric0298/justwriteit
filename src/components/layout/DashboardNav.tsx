@@ -9,6 +9,7 @@ import {
   Mic,
   History,
   Settings,
+  CreditCard,
   ChevronRight,
 } from "lucide-react";
 
@@ -17,6 +18,7 @@ const items = [
   { href: "/dashboard/transcribe-file", label: "Transcribir archivo", icon: FileAudio },
   { href: "/dashboard/transcribe-live", label: "Transcribir en vivo", icon: Mic },
   { href: "/dashboard/history", label: "Historial", icon: History },
+  { href: "/dashboard/billing", label: "Plan y pagos", icon: CreditCard },
   { href: "/dashboard/settings", label: "Ajustes", icon: Settings },
 ] as const;
 

@@ -6,6 +6,7 @@ import { LiveHeader } from "@/components/transcribe-live/LiveHeader";
 import { LiveSettings } from "@/components/transcribe-live/LiveSettings";
 import { LiveControls } from "@/components/transcribe-live/LiveControls";
 import { LiveResult } from "@/components/transcribe-live/LiveResult";
+import { UsageNotice } from "@/components/billing/UsageNotice";
 
 export default function TranscribeLivePage() {
   const live = useLiveTranscription();
@@ -13,6 +14,8 @@ export default function TranscribeLivePage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <LiveHeader status={live.status} seconds={live.seconds} />
+
+      <UsageNotice usage={live.usage} />
 
       <LiveSettings
         language={live.language}

@@ -1,64 +1,62 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-CREATE TABLE IF NOT EXISTS users (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name text NOT NULL,
-  email text NOT NULL UNIQUE,
-  password_hash text NOT NULL,
-  plan text NOT NULL DEFAULT 'FREE' CHECK (plan IN ('FREE', 'PRO', 'PREMIUM')),
-  stripe_customer_id text NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  verified_at timestamptz NULL
-);
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS plan text NOT NULL DEFAULT 'FREE';
 
-CREATE INDEX IF NOT EXISTS idx_users_created_at ON users (created_at);
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS stripe_customer_id text NULL;
+
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'users_plan_check'
+  ) THEN
+    ALTER TABLE users
+    ADD CONSTRAINT users_plan_check CHECK (plan IN ('FREE', 'PRO', 'PREMIUM'));
+  END IF;
+END $$;
+
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_stripe_customer_id
   ON users (stripe_customer_id)
   WHERE stripe_customer_id IS NOT NULL;
 
-CREATE TABLE IF NOT EXISTS transcriptions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+ALTER TABLE transcriptions
+ADD COLUMN IF NOT EXISTS audio_url text NULL;
 
-  type text NOT NULL CHECK (type IN ('file', 'live')),
-  language text NOT NULL,
-  status text NOT NULL CHECK (status IN ('pending', 'processing', 'done', 'failed')),
+ALTER TABLE transcriptions
+ADD COLUMN IF NOT EXISTS segments jsonb NULL;
 
-  audio_filename text NULL,
-  audio_url text NULL,
-  duration integer NULL CHECK (duration >= 0),
-  file_size_bytes bigint NULL CHECK (file_size_bytes IS NULL OR file_size_bytes >= 0),
-  transcript_text text NULL,
-  segments jsonb NULL,
+ALTER TABLE transcriptions
+ADD COLUMN IF NOT EXISTS file_size_bytes bigint NULL CHECK (file_size_bytes IS NULL OR file_size_bytes >= 0);
 
-  is_free_usage boolean NOT NULL DEFAULT true,
-  plan text NOT NULL DEFAULT 'FREE' CHECK (plan IN ('FREE', 'PRO', 'PREMIUM')),
+ALTER TABLE transcriptions
+ADD COLUMN IF NOT EXISTS is_free_usage boolean NOT NULL DEFAULT true;
 
-  notification_status text NOT NULL DEFAULT 'pending',
-  notification_error text NULL,
+ALTER TABLE transcriptions
+ADD COLUMN IF NOT EXISTS plan text NOT NULL DEFAULT 'FREE';
 
-  created_at timestamptz NOT NULL DEFAULT now()
-);
+ALTER TABLE transcriptions
+ADD COLUMN IF NOT EXISTS notification_status text NOT NULL DEFAULT 'pending';
 
-CREATE INDEX IF NOT EXISTS idx_transcriptions_user_id_created_at
-  ON transcriptions (user_id, created_at DESC);
+ALTER TABLE transcriptions
+ADD COLUMN IF NOT EXISTS notification_error text NULL;
 
-CREATE INDEX IF NOT EXISTS idx_transcriptions_status
-  ON transcriptions (status);
-
-CREATE INDEX IF NOT EXISTS idx_transcriptions_type
-  ON transcriptions (type);
-
-CREATE INDEX IF NOT EXISTS idx_transcriptions_language
-  ON transcriptions (language);
-
-CREATE INDEX IF NOT EXISTS idx_transcriptions_notification_status
-  ON transcriptions (notification_status);
-
-CREATE INDEX IF NOT EXISTS idx_transcriptions_transcript_fts
-  ON transcriptions
-  USING GIN (to_tsvector('simple', coalesce(transcript_text, '')));
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'transcriptions_plan_check'
+  ) THEN
+    ALTER TABLE transcriptions
+    ADD CONSTRAINT transcriptions_plan_check CHECK (plan IN ('FREE', 'PRO', 'PREMIUM'));
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS daily_usage (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

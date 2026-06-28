@@ -1,44 +1,114 @@
-# JustWriteIt 🎙️✍️  
-### Propuesta de proyecto
+# JustWriteIt
 
-**JustWriteIt** es una propuesta de aplicación web cuyo objetivo es permitir a los usuarios **transcribir audios a texto de forma sencilla**, ya sea subiendo un archivo de audio o grabando la voz en tiempo real.
----
+JustWriteIt es una aplicacion web para transcribir audios a texto con IA, gestionar historial privado por usuario y trabajar con transcripciones de archivo o grabacion en vivo.
 
-## Objetivo
+## Stack
 
-Desarrollar una aplicación web moderna que permita:
-
-- Convertir audio en texto de manera intuitiva  
-- Gestionar transcripciones de forma privada por usuario  
-- Aplicar buenas prácticas actuales de desarrollo web  
-
----
-
-##  Idea general
-
-La aplicación contará con:
-
-- Registro y acceso de usuarios
-- Un panel privado (dashboard) con navegación fija
-- Transcripción de audio:
-  - Desde archivos de audio
-  - En tiempo real
-- Historial de audios transcritos por cada usuario
-- Modo claro y modo oscuro
-- Diseño adaptable a móviles y accesible
-
----
-
-##  Tecnologías previstas
-
-- Next.js
+- Next.js 16 App Router
+- React 19
 - TypeScript
-- Base de datos para almacenar usuarios y transcripciones
-- Despliegue en la nube
+- NextAuth credentials/JWT
+- PostgreSQL con `pg`
+- Tailwind CSS
+- Vercel Blob para subida de audio
+- `whisper-service` FastAPI + `faster-whisper`
 
----
+## Desarrollo
 
-##  Autor
+```bash
+npm install
+npm run dev
+```
 
-**Eric Mancebo Muminhodzic**  
-Proyecto académico de desarrollo web -**Entorno-Cliente** 2DAW semipresencial
+La app queda en `http://localhost:3000`.
+
+## Base de datos
+
+Aplica el esquema base o las migraciones de `src/db/migrations`.
+
+La migracion freemium principal es:
+
+```text
+src/db/migrations/004_freemium_billing_security.sql
+```
+
+## Whisper
+
+Repositorio relacionado:
+
+```text
+C:\Users\Usuario\Documents\proyectos\whisper-service
+```
+
+Con Docker desde este repo:
+
+```bash
+docker compose up --build whisper
+```
+
+O desde `whisper-service`:
+
+```bash
+pip install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+JustWriteIt llama a `WHISPER_SERVICE_URL` desde backend. Si `WHISPER_SERVICE_TOKEN` esta definido, se envia como `Authorization: Bearer`.
+
+## Variables
+
+Copia `.env.example` a `.env.local` y completa valores reales fuera de Git.
+
+Variables principales:
+
+- `DATABASE_URL`
+- `NEXTAUTH_SECRET`
+- `WHISPER_SERVICE_URL`
+- `WHISPER_SERVICE_TOKEN`
+- `BLOB_READ_WRITE_TOKEN`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_PRICE_PRO`
+- `STRIPE_PRICE_PREMIUM`
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL`
+
+## Freemium
+
+Los planes estan definidos en `src/lib/billing/plans.ts`.
+
+- Free: 3 transcripciones al dia.
+- Pro: 50 transcripciones al dia.
+- Premium: 200 transcripciones al dia.
+
+La validacion real ocurre en API y Postgres, no en localStorage ni solo en UI.
+
+## Pagos
+
+La pantalla `/dashboard/billing` crea sesiones de Stripe Checkout desde backend. El plan del usuario se actualiza solo al recibir un webhook valido en:
+
+```text
+/api/stripe/webhook
+```
+
+Consulta `PAYMENTS_SETUP.md`.
+
+## Seguridad y limites
+
+Consulta:
+
+- `SECURITY_CHECKLIST.md`
+- `USAGE_LIMITS.md`
+
+## Scripts
+
+```bash
+npm run dev
+npm run lint
+npm run build
+```
+
+## Autor
+
+Eric Mancebo Muminhodzic
+

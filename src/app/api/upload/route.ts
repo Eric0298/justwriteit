@@ -2,22 +2,12 @@ import { NextResponse } from "next/server";
 import { auth } from "@/../auth";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import type { PutBlobResult } from "@vercel/blob";
+import { getUsageStatus } from "@/lib/queries/billing";
+import { ALLOWED_AUDIO_MIME_TYPES } from "@/lib/security/audioValidation";
+import { getClientIp } from "@/lib/security/ip";
+import { rateLimit } from "@/lib/security/rateLimit";
 
 export const runtime = "nodejs";
-
-const MAX_BYTES = 25 * 1024 * 1024; // 25MB
-
-const ALLOWED_AUDIO_TYPES = [
-  "audio/mpeg",
-  "audio/mp3",
-  "audio/wav",
-  "audio/x-wav",
-  "audio/webm",
-  "audio/ogg",
-  "audio/mp4",
-  "audio/x-m4a",
-  "audio/aac",
-];
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -28,16 +18,36 @@ export async function POST(request: Request) {
   const body = (await request.json()) as HandleUploadBody;
 
   try {
+    const ip = await getClientIp();
+    const limited = await rateLimit({
+      key: `upload:${session.user.id}:${ip}`,
+      limit: 12,
+      windowMs: 60_000,
+    });
+
+    if (!limited.ok) {
+      return NextResponse.json(
+        { error: "Demasiadas subidas. Espera un momento." },
+        { status: 429 }
+      );
+    }
+
+    const usage = await getUsageStatus(session.user.id);
+
+    if (!usage.canTranscribe) {
+      return NextResponse.json({ error: usage.message, usage }, { status: 429 });
+    }
+
     const jsonResponse = await handleUpload({
       body,
       request,
 
       onBeforeGenerateToken: async () => ({
-  allowedContentTypes: ALLOWED_AUDIO_TYPES,
-  maximumSizeInBytes: MAX_BYTES,
-  addRandomSuffix: true,
-  tokenPayload: JSON.stringify({ userId: session.user.id }),
-}),
+        allowedContentTypes: Array.from(ALLOWED_AUDIO_MIME_TYPES),
+        maximumSizeInBytes: usage.maxAudioFileSizeBytes,
+        addRandomSuffix: true,
+        tokenPayload: JSON.stringify({ userId: session.user.id }),
+      }),
 
       onUploadCompleted: async ({
         blob,

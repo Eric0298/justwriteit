@@ -27,7 +27,10 @@ export function getTranscriptionAdapter() {
   if (!raw) throw new Error("WHISPER_SERVICE_URL no definida");
 
   const whisperUrl = sanitizeBaseUrl(raw);
-  const whisper = new WhisperHttpAdapter(whisperUrl);
+  const whisper = new WhisperHttpAdapter({
+    baseUrl: whisperUrl,
+    serviceToken: process.env.WHISPER_SERVICE_TOKEN,
+  });
 
   return {
     async transcribeFile(input: TranscribeFileInput): Promise<TranscribeFileOutput> {

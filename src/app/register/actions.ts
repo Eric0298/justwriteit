@@ -2,9 +2,10 @@
 
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
-import { headers } from "next/headers";
 import { registerSchema } from "@/lib/validators/auth";
 import { createUser } from "@/lib/queries/users";
+import { getClientIp } from "@/lib/security/ip";
+import { rateLimit } from "@/lib/security/rateLimit";
 
 export type RegisterFormState = {
   ok: boolean;
@@ -18,42 +19,17 @@ function getBcryptRounds() {
   return Number.isFinite(n) && n >= 10 && n <= 14 ? n : 12;
 }
 
-type Bucket = { count: number; resetAt: number };
-const registerBuckets = new Map<string, Bucket>();
-
-async function getClientIpSafe(): Promise<string> {
-  const h = await headers();
-  const xff = h.get("x-forwarded-for");
-  if (xff) return xff.split(",")[0].trim();
-  return h.get("x-real-ip") ?? "unknown";
-}
-
-function rateLimitOrThrow(input: { key: string; limit: number; windowMs: number }) {
-  const now = Date.now();
-  const existing = registerBuckets.get(input.key);
-
-  if (!existing || now > existing.resetAt) {
-    registerBuckets.set(input.key, { count: 1, resetAt: now + input.windowMs });
-    return;
-  }
-
-  if (existing.count >= input.limit) throw new Error("RATE_LIMIT");
-
-  existing.count += 1;
-  registerBuckets.set(input.key, existing);
-}
-
 export async function registerAction(
   _prevState: RegisterFormState,
   formData: FormData
 ): Promise<RegisterFormState> {
   try {
-    const ip = await getClientIpSafe();
-    rateLimitOrThrow({ key: `register:${ip}`, limit: 5, windowMs: 60_000 });
-  } catch (e) {
-    if (e instanceof Error && e.message === "RATE_LIMIT") {
+    const ip = await getClientIp();
+    const limited = await rateLimit({ key: `register:${ip}`, limit: 5, windowMs: 60_000 });
+    if (!limited.ok) {
       return { ok: false, formError: "Demasiados intentos. Espera 1 minuto y vuelve a intentarlo." };
     }
+  } catch {
     return { ok: false, formError: "No se pudo procesar la solicitud." };
   }
 
@@ -92,7 +68,7 @@ export async function registerAction(
     if (anyErr?.code === "23505") {
       return {
         ok: false,
-        formError: "Ese email ya está registrado.",
+        formError: "Ese email ya esta registrado.",
         fieldErrors: { email: "Ya existe una cuenta con ese email." },
       };
     }
@@ -102,3 +78,4 @@ export async function registerAction(
 
   redirect("/login?registered=1");
 }
+

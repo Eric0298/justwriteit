@@ -6,6 +6,10 @@ services:
     ports:
       - "8000:8000"
     restart: unless-stopped
+    environment:
+      WHISPER_SERVICE_TOKEN: ${WHISPER_SERVICE_TOKEN:-change_me}
+      MAX_AUDIO_FILE_SIZE_MB: ${WHISPER_MAX_AUDIO_FILE_SIZE_MB:-100}
+      ALLOWED_ORIGINS: ${APP_URL:-http://localhost:3000}
 
     # Healthcheck: marca el contenedor como "healthy" cuando /health responde OK
     healthcheck:

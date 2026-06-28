@@ -6,10 +6,13 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { UsageNotice } from "@/components/billing/UsageNotice";
+import type { UsageStatus } from "@/lib/types/usage";
 
 type Props = {
   statusBadge: string;
   isLoading: boolean;
+  usage: UsageStatus | null;
 
   file: File | null;
   setFile: (f: File | null) => void;
@@ -26,6 +29,7 @@ type Props = {
 export function TranscribeFileForm({
   statusBadge,
   isLoading,
+  usage,
   file,
   setFile,
   language,
@@ -44,6 +48,10 @@ export function TranscribeFileForm({
           </p>
         </div>
         <Badge>{statusBadge}</Badge>
+      </div>
+
+      <div className="mt-5">
+        <UsageNotice usage={usage} />
       </div>
 
       <form onSubmit={onSubmit} className="mt-6 grid gap-4">
@@ -87,7 +95,11 @@ export function TranscribeFileForm({
           disabled={isLoading}
         />
 
-        <Button type="submit" isLoading={isLoading} disabled={isLoading || !file}>
+        <Button
+          type="submit"
+          isLoading={isLoading}
+          disabled={isLoading || !file || Boolean(usage && !usage.canTranscribe)}
+        >
           {isLoading ? "Transcribiendo..." : "Transcribir"}
         </Button>
       </form>

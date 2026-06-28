@@ -5,6 +5,7 @@ import { upload } from "@vercel/blob/client";
 import { useToast } from "@/components/ui/Toast";
 import type { Phase } from "@/components/transcribe/TranscriptionProgress";
 import type { Transcription } from "@/lib/types/transcriptions";
+import type { UsageStatus } from "@/lib/types/usage";
 
 function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null;
@@ -12,6 +13,28 @@ function isObject(v: unknown): v is Record<string, unknown> {
 
 function pickErrorMessage(data: unknown, fallback: string) {
   return isObject(data) && typeof data.error === "string" ? data.error : fallback;
+}
+
+function isUsageStatus(v: unknown): v is UsageStatus {
+  return (
+    isObject(v) &&
+    typeof v.plan === "string" &&
+    typeof v.remainingToday === "number" &&
+    typeof v.dailyLimit === "number" &&
+    typeof v.maxAudioFileSizeBytes === "number" &&
+    typeof v.canTranscribe === "boolean" &&
+    typeof v.message === "string"
+  );
+}
+
+async function readJsonOrNull(res: Response): Promise<unknown> {
+  const rawText = await res.text();
+  if (!rawText) return null;
+  try {
+    return JSON.parse(rawText) as unknown;
+  } catch {
+    return null;
+  }
 }
 
 export function useFileTranscription() {
@@ -23,16 +46,26 @@ export function useFileTranscription() {
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [result, setResult] = React.useState<Transcription | null>(null);
+  const [usage, setUsage] = React.useState<UsageStatus | null>(null);
 
   const [phase, setPhase] = React.useState<Phase>("idle");
   const [progress, setProgress] = React.useState(0);
   const abortControllerRef = React.useRef<AbortController | null>(null);
 
-  // escuchar audio inmediatamente
   const [lastAudioUrl, setLastAudioUrl] = React.useState<string | null>(null);
-
-  // compat: segments fuera de transcription
   const [segmentsRaw, setSegmentsRaw] = React.useState<unknown>(null);
+
+  const refreshUsage = React.useCallback(async () => {
+    const res = await fetch("/api/usage/today", { cache: "no-store" });
+    const data = await readJsonOrNull(res);
+    if (isObject(data) && isUsageStatus(data.usage)) {
+      setUsage(data.usage);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    void refreshUsage();
+  }, [refreshUsage]);
 
   function cancel() {
     if (abortControllerRef.current) {
@@ -42,14 +75,30 @@ export function useFileTranscription() {
     setIsLoading(false);
     setPhase("idle");
     setProgress(0);
-    push({ title: "Cancelado", message: "Transcripción cancelada.", variant: "danger" });
+    push({ title: "Cancelado", message: "Transcripcion cancelada.", variant: "danger" });
   }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
 
+    if (isLoading) return;
+
     if (!file) {
       push({ title: "Falta archivo", message: "Selecciona un audio para transcribir.", variant: "danger" });
+      return;
+    }
+
+    if (usage && !usage.canTranscribe) {
+      push({ title: "Limite diario alcanzado", message: usage.message, variant: "danger" });
+      return;
+    }
+
+    if (usage && file.size > usage.maxAudioFileSizeBytes) {
+      push({
+        title: "Archivo demasiado grande",
+        message: `Tu plan permite audios de hasta ${usage.maxAudioFileSizeMb}MB.`,
+        variant: "danger",
+      });
       return;
     }
 
@@ -57,14 +106,12 @@ export function useFileTranscription() {
     setResult(null);
     setSegmentsRaw(null);
     setLastAudioUrl(null);
-
     setPhase("uploading");
     setProgress(0);
 
     abortControllerRef.current = new AbortController();
 
     try {
-      // 1) Subida a Vercel Blob
       setProgress(10);
       const blob = await upload(file.name, file, {
         access: "public",
@@ -75,7 +122,6 @@ export function useFileTranscription() {
       setProgress(30);
       setPhase("transcribing");
 
-      // 2) Pedir transcripción
       const res = await fetch("/api/transcribe/file", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -92,22 +138,16 @@ export function useFileTranscription() {
       setProgress(70);
       setPhase("saving");
 
-      const rawText = await res.text();
-      const data: unknown = rawText
-        ? (() => {
-            try {
-              return JSON.parse(rawText);
-            } catch {
-              return null;
-            }
-          })()
-        : null;
+      const data = await readJsonOrNull(res);
+      if (isObject(data) && isUsageStatus(data.usage)) {
+        setUsage(data.usage);
+      }
 
       if (!res.ok) {
         setPhase("error");
         push({
           title: "Error",
-          message: data ? pickErrorMessage(data, rawText || "No se pudo transcribir.") : rawText || "No se pudo transcribir.",
+          message: pickErrorMessage(data, "No se pudo transcribir."),
           variant: "danger",
         });
         return;
@@ -115,24 +155,25 @@ export function useFileTranscription() {
 
       if (!data || !isObject(data) || data.ok !== true || !isObject(data.transcription)) {
         setPhase("error");
-        push({ title: "Error", message: "Respuesta inválida del servidor.", variant: "danger" });
+        push({ title: "Error", message: "Respuesta invalida del servidor.", variant: "danger" });
         return;
       }
 
       const t = data.transcription as Transcription;
       setResult(t);
 
-      if ("segments" in data) {
-        setSegmentsRaw((data as Record<string, unknown>).segments);
+      if (isObject(data.transcription) && "segments" in data.transcription) {
+        setSegmentsRaw((data.transcription as Record<string, unknown>).segments);
       }
 
       setProgress(100);
       setPhase("done");
-      push({ title: "Transcripción lista ✅", message: "Guardada en tu historial.", variant: "success" });
+      push({ title: "Transcripcion lista", message: "Guardada en tu historial.", variant: "success" });
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") return;
       setPhase("error");
       push({ title: "Error", message: err instanceof Error ? err.message : "Fallo inesperado.", variant: "danger" });
+      await refreshUsage().catch(() => undefined);
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
@@ -140,26 +181,22 @@ export function useFileTranscription() {
   }
 
   return {
-    // form
     file,
     setFile,
     language,
     setLanguage,
     context,
     setContext,
-
-    // status
     isLoading,
     result,
+    usage,
     phase,
     progress,
-
-    // extras
     lastAudioUrl,
     segmentsRaw,
-
-    // actions
     submit,
     cancel,
+    refreshUsage,
   };
 }
+

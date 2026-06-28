@@ -83,9 +83,11 @@ function bufferToArrayBuffer(buf: Buffer): ArrayBuffer {
 
 export class WhisperHttpAdapter {
   private baseUrl: string;
+  private serviceToken?: string;
 
-  constructor(baseUrl: string) {
-    this.baseUrl = baseUrl.replace(/\/$/, "");
+  constructor(input: { baseUrl: string; serviceToken?: string }) {
+    this.baseUrl = input.baseUrl.replace(/\/$/, "");
+    this.serviceToken = input.serviceToken?.trim() || undefined;
   }
 
   async transcribeFile(input: {
@@ -106,6 +108,9 @@ export class WhisperHttpAdapter {
 
     const res = await fetch(`${this.baseUrl}/transcribe/file`, {
       method: "POST",
+      headers: this.serviceToken
+        ? { authorization: `Bearer ${this.serviceToken}` }
+        : undefined,
       body: fd,
     });
 

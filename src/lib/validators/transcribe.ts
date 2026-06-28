@@ -1,8 +1,11 @@
 import { z } from "zod";
 
+export const transcriptionLanguageSchema = z.enum(["es", "en", "ca", "fr"]);
+
 export const transcribeFileSchema = z.object({
-  language: z.string().min(2).max(30),
+  language: transcriptionLanguageSchema,
   context: z.string().max(300).optional().or(z.literal("")),
 });
 
 export type TranscribeFileInput = z.infer<typeof transcribeFileSchema>;
+

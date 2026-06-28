@@ -2,6 +2,8 @@ import { auth } from "@/../auth";
 import { redirect } from "next/navigation";
 import { User, Mail, Calendar, Shield } from "lucide-react";
 import { getUserByEmail } from "@/lib/queries/users";
+import { getBillingProfile } from "@/lib/queries/billing";
+import { PLAN_LIMITS, normalizePlan } from "@/lib/billing/plans";
 import { signOutAction } from "@/app/dashboard/actions";
 
 export default async function SettingsPage() {
@@ -11,6 +13,8 @@ export default async function SettingsPage() {
   const userRow = session.user.email
     ? await getUserByEmail(session.user.email)
     : null;
+  const billing = await getBillingProfile(session.user.id);
+  const plan = normalizePlan(billing?.plan ?? userRow?.plan);
 
   const createdAt = userRow?.created_at
     ? new Date(userRow.created_at).toLocaleDateString("es-ES", {
@@ -95,7 +99,7 @@ export default async function SettingsPage() {
           </span>
           <div className="min-w-0">
             <p className="text-xs text-muted">Plan</p>
-            <p className="text-sm font-medium">Gratuito</p>
+            <p className="text-sm font-medium">{PLAN_LIMITS[plan].label}</p>
           </div>
         </div>
       </div>
