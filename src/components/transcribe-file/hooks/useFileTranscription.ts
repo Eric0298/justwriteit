@@ -141,7 +141,6 @@ export function useFileTranscription() {
         access: "public",
         handleUploadUrl: "/api/upload",
         contentType,
-        multipart: true,
         abortSignal: uploadSignal,
         onUploadProgress: ({ percentage }) => {
           setProgress(10 + Math.round(percentage * 0.2));
