@@ -7,7 +7,9 @@ const nextConfig: NextConfig = {
       "'self'",
       "https://api.stripe.com",
       "https://checkout.stripe.com",
+      "https://vercel.com",
       "https://blob.vercel-storage.com",
+      "https://*.blob.vercel-storage.com",
       "https://*.public.blob.vercel-storage.com",
       ...(isDev ? ["http://localhost:*", "ws://localhost:*"] : []),
     ].join(" ");
