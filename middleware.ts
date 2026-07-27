@@ -26,9 +26,10 @@ export async function middleware(req: NextRequest) {
 
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register");
   const isDashboard = pathname.startsWith("/dashboard");
+  const isLanding = pathname === "/";
 
-  // Si no es página de auth ni dashboard, dejar pasar
-  if (!isAuthPage && !isDashboard) {
+  // Si no es landing, ni página de auth, ni dashboard, dejar pasar
+  if (!isAuthPage && !isDashboard && !isLanding) {
     return NextResponse.next();
   }
 
@@ -65,8 +66,8 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Token válido y está en página de auth
-  if (isValidToken && isAuthPage) {
+  // Token válido y está en página de auth o en landing
+  if (isValidToken && (isAuthPage || isLanding)) {
     const url = req.nextUrl.clone();
     url.pathname = "/dashboard";
     url.searchParams.delete("next");
@@ -77,5 +78,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/register"],
+  matcher: ["/", "/dashboard/:path*", "/login", "/register"],
 };
