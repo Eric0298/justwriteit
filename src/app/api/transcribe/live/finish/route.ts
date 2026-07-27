@@ -94,7 +94,7 @@ export async function POST(req: Request) {
 
     const adapter = getTranscriptionAdapter();
     const filename = `live-${sessionId}.webm`;
-    const mimeType = live.mime_type || "audio/webm";
+    const mimeType = (live.mime_type || "audio/webm").split(";")[0].trim();
 
     const out = await adapter.transcribeFile({
       fileBuffer: merged,

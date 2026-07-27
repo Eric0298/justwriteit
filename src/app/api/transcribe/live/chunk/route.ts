@@ -45,7 +45,8 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: "Chunk invalido o demasiado grande." }, { status: 413 });
   }
 
-  if (file.type && !isAllowedAudioMime(file.type)) {
+  const mime = file.type.split(";")[0].trim();
+  if (mime && !isAllowedAudioMime(mime)) {
     return Response.json({ ok: false, error: "Tipo de audio no permitido." }, { status: 415 });
   }
 

@@ -15,6 +15,24 @@ function pickErrorMessage(data: unknown, fallback: string) {
   return isObject(data) && typeof data.error === "string" ? data.error : fallback;
 }
 
+const EXTENSION_TO_MIME: Record<string, string> = {
+  mp3: "audio/mpeg",
+  wav: "audio/wav",
+  webm: "audio/webm",
+  ogg: "audio/ogg",
+  oga: "audio/ogg",
+  m4a: "audio/mp4",
+  mp4: "audio/mp4",
+  aac: "audio/aac",
+};
+
+function inferContentType(file: File): string {
+  const raw = (file.type || "").split(";")[0].trim();
+  if (raw && raw !== "application/octet-stream") return raw;
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  return EXTENSION_TO_MIME[ext] ?? "audio/mpeg";
+}
+
 function isUsageStatus(v: unknown): v is UsageStatus {
   return (
     isObject(v) &&
@@ -113,9 +131,16 @@ export function useFileTranscription() {
 
     try {
       setProgress(10);
+      const contentType = inferContentType(file);
+      const uploadSignal = AbortSignal.any([
+        abortControllerRef.current.signal,
+        AbortSignal.timeout(45_000),
+      ]);
       const blob = await upload(file.name, file, {
         access: "public",
         handleUploadUrl: "/api/upload",
+        contentType,
+        abortSignal: uploadSignal,
       });
       setLastAudioUrl(blob.url);
 
@@ -172,7 +197,13 @@ export function useFileTranscription() {
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") return;
       setPhase("error");
-      push({ title: "Error", message: err instanceof Error ? err.message : "Fallo inesperado.", variant: "danger" });
+      const message =
+        err instanceof Error && err.name === "TimeoutError"
+          ? "La subida tardó demasiado. Revisa tu conexión e intenta de nuevo."
+          : err instanceof Error
+            ? err.message
+            : "Fallo inesperado.";
+      push({ title: "Error", message, variant: "danger" });
       await refreshUsage().catch(() => undefined);
     } finally {
       setIsLoading(false);
