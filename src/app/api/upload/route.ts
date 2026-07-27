@@ -3,7 +3,6 @@ import { auth } from "@/../auth";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import type { PutBlobResult } from "@vercel/blob";
 import { getUsageStatus } from "@/lib/queries/billing";
-import { ALLOWED_AUDIO_MIME_TYPES } from "@/lib/security/audioValidation";
 import { getClientIp } from "@/lib/security/ip";
 import { rateLimit } from "@/lib/security/rateLimit";
 
@@ -44,12 +43,11 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: usage.message, usage }, { status: 429 });
       }
 
+      void usage;
       const jsonResponse = await handleUpload({
         body,
         request,
         onBeforeGenerateToken: async () => ({
-          allowedContentTypes: Array.from(ALLOWED_AUDIO_MIME_TYPES),
-          maximumSizeInBytes: usage.maxAudioFileSizeBytes,
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({ userId: session.user.id }),
         }),
@@ -72,7 +70,6 @@ export async function POST(request: Request) {
       body,
       request,
       onBeforeGenerateToken: async () => ({
-        allowedContentTypes: Array.from(ALLOWED_AUDIO_MIME_TYPES),
         addRandomSuffix: true,
       }),
       onUploadCompleted: async ({

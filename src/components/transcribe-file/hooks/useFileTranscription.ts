@@ -15,24 +15,6 @@ function pickErrorMessage(data: unknown, fallback: string) {
   return isObject(data) && typeof data.error === "string" ? data.error : fallback;
 }
 
-const EXTENSION_TO_MIME: Record<string, string> = {
-  mp3: "audio/mpeg",
-  wav: "audio/wav",
-  webm: "audio/webm",
-  ogg: "audio/ogg",
-  oga: "audio/ogg",
-  m4a: "audio/mp4",
-  mp4: "audio/mp4",
-  aac: "audio/aac",
-};
-
-function inferContentType(file: File): string {
-  const raw = (file.type || "").split(";")[0].trim();
-  if (raw && raw !== "application/octet-stream") return raw;
-  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-  return EXTENSION_TO_MIME[ext] ?? "audio/mpeg";
-}
-
 function isUsageStatus(v: unknown): v is UsageStatus {
   return (
     isObject(v) &&
@@ -132,19 +114,9 @@ export function useFileTranscription() {
 
     try {
       setProgress(10);
-      const contentType = inferContentType(file);
-      const uploadSignal = AbortSignal.any([
-        controller.signal,
-        AbortSignal.timeout(10 * 60_000),
-      ]);
       const blob = await upload(file.name, file, {
         access: "public",
         handleUploadUrl: "/api/upload",
-        contentType,
-        abortSignal: uploadSignal,
-        onUploadProgress: ({ percentage }) => {
-          setProgress(10 + Math.round(percentage * 0.2));
-        },
       });
       setLastAudioUrl(blob.url);
 
