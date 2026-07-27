@@ -127,20 +127,25 @@ export function useFileTranscription() {
     setPhase("uploading");
     setProgress(0);
 
-    abortControllerRef.current = new AbortController();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     try {
       setProgress(10);
       const contentType = inferContentType(file);
       const uploadSignal = AbortSignal.any([
-        abortControllerRef.current.signal,
-        AbortSignal.timeout(45_000),
+        controller.signal,
+        AbortSignal.timeout(10 * 60_000),
       ]);
       const blob = await upload(file.name, file, {
         access: "public",
         handleUploadUrl: "/api/upload",
         contentType,
+        multipart: true,
         abortSignal: uploadSignal,
+        onUploadProgress: ({ percentage }) => {
+          setProgress(10 + Math.round(percentage * 0.2));
+        },
       });
       setLastAudioUrl(blob.url);
 
@@ -157,7 +162,7 @@ export function useFileTranscription() {
           language,
           context,
         }),
-        signal: abortControllerRef.current.signal,
+        signal: controller.signal,
       });
 
       setProgress(70);
@@ -195,14 +200,17 @@ export function useFileTranscription() {
       setPhase("done");
       push({ title: "Transcripcion lista", message: "Guardada en tu historial.", variant: "success" });
     } catch (err) {
-      if (err instanceof Error && err.name === "AbortError") return;
+      const isManualAbort =
+        err instanceof Error && err.name === "AbortError" && controller.signal.aborted;
+      if (isManualAbort) return;
       setPhase("error");
-      const message =
-        err instanceof Error && err.name === "TimeoutError"
-          ? "La subida tardó demasiado. Revisa tu conexión e intenta de nuevo."
-          : err instanceof Error
-            ? err.message
-            : "Fallo inesperado.";
+      const isTimeout =
+        err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
+      const message = isTimeout
+        ? "La subida tardó demasiado. Revisa tu conexión e intenta de nuevo."
+        : err instanceof Error
+          ? err.message
+          : "Fallo inesperado.";
       push({ title: "Error", message, variant: "danger" });
       await refreshUsage().catch(() => undefined);
     } finally {
