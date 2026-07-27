@@ -19,6 +19,7 @@ import { transcribeFileSchema } from "@/lib/validators/transcribe";
 import { notifyTranscriptionCompleted } from "@/lib/mailer";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 type Body = {
   fileUrl: string;

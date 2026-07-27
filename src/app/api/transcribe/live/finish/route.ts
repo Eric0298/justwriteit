@@ -18,6 +18,7 @@ import { getTranscriptionAdapter } from "@/lib/transcription/adapter";
 import { z } from "zod";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 const MAX_LIVE_MINUTES = 30;
 
