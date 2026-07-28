@@ -156,7 +156,17 @@ export default async function RootLayout({
 
             <footer className="app-footer">
               <div className="container-app py-8 text-xs text-muted flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <p>© {new Date().getFullYear()} JustWriteIt</p>
+                <p>
+                  © {new Date().getFullYear()} JustWriteIt · Creado por{" "}
+                  <a
+                    className="footer-link"
+                    href="https://ericmancebo.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Eric Mancebo
+                  </a>
+                </p>
                 <div className="flex gap-3">
                   <Link className="footer-link" href="/">
                     Inicio
