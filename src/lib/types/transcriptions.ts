@@ -15,7 +15,5 @@ export type Transcription = {
   file_size_bytes: number | null;
   transcript_text: string | null;
   segments: WhisperSegment[] | null;
-  is_free_usage: boolean;
-  plan: string;
   created_at: string;
 };

@@ -19,8 +19,6 @@ export type TranscriptionRow = {
   transcript_text: string | null;
   segments: TranscriptionSegments | null;
   created_at: string;
-  is_free_usage: boolean;
-  plan: string;
 
   notification_status: NotificationStatus;
   notification_error: string | null;
@@ -29,7 +27,6 @@ export type TranscriptionRow = {
 const SELECT_COLUMNS = `
   id, user_id, type, language, status,
   audio_filename, audio_url, duration, file_size_bytes, transcript_text, segments, created_at,
-  is_free_usage, plan,
   notification_status, notification_error
 `;
 
@@ -42,16 +39,14 @@ export async function createTranscription(input: {
   duration?: number | null;
   transcriptText?: string | null;
   fileSizeBytes?: number | null;
-  isFreeUsage?: boolean;
-  plan?: string;
 }): Promise<TranscriptionRow> {
   const res = await query<TranscriptionRow>(
     `
     INSERT INTO transcriptions (
       user_id, type, language, status, audio_filename, duration, transcript_text,
-      file_size_bytes, is_free_usage, plan
+      file_size_bytes
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     RETURNING ${SELECT_COLUMNS}
     `,
     [
@@ -63,8 +58,6 @@ export async function createTranscription(input: {
       input.duration ?? null,
       input.transcriptText ?? null,
       input.fileSizeBytes ?? null,
-      input.isFreeUsage ?? true,
-      input.plan ?? "FREE",
     ]
   );
 

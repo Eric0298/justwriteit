@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check:freemium": "node scripts/check-freemium-setup.mjs"
+    "check:setup": "node scripts/check-setup.mjs"
   },
   "dependencies": {
     "@vercel/blob": "^2.2.0",

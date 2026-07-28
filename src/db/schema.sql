@@ -5,17 +5,12 @@ CREATE TABLE IF NOT EXISTS users (
   name text NOT NULL,
   email text NOT NULL UNIQUE,
   password_hash text NOT NULL,
-  plan text NOT NULL DEFAULT 'FREE' CHECK (plan IN ('FREE', 'PRO', 'PREMIUM')),
-  stripe_customer_id text NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   verified_at timestamptz NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_created_at ON users (created_at);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_users_stripe_customer_id
-  ON users (stripe_customer_id)
-  WHERE stripe_customer_id IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS transcriptions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -31,9 +26,6 @@ CREATE TABLE IF NOT EXISTS transcriptions (
   file_size_bytes bigint NULL CHECK (file_size_bytes IS NULL OR file_size_bytes >= 0),
   transcript_text text NULL,
   segments jsonb NULL,
-
-  is_free_usage boolean NOT NULL DEFAULT true,
-  plan text NOT NULL DEFAULT 'FREE' CHECK (plan IN ('FREE', 'PRO', 'PREMIUM')),
 
   notification_status text NOT NULL DEFAULT 'pending',
   notification_error text NULL,
@@ -73,31 +65,6 @@ CREATE TABLE IF NOT EXISTS daily_usage (
 CREATE INDEX IF NOT EXISTS idx_daily_usage_user_date
   ON daily_usage (user_id, usage_date DESC);
 
-CREATE TABLE IF NOT EXISTS subscriptions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  stripe_customer_id text NOT NULL,
-  stripe_subscription_id text NOT NULL UNIQUE,
-  status text NOT NULL,
-  plan text NOT NULL CHECK (plan IN ('FREE', 'PRO', 'PREMIUM')),
-  current_period_end timestamptz NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id
-  ON subscriptions (user_id);
-
-CREATE INDEX IF NOT EXISTS idx_subscriptions_status
-  ON subscriptions (status);
-
-CREATE TABLE IF NOT EXISTS stripe_events (
-  event_id text PRIMARY KEY,
-  event_type text NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  processed_at timestamptz NULL
-);
-
 CREATE TABLE IF NOT EXISTS rate_limits (
   key text PRIMARY KEY,
   count integer NOT NULL DEFAULT 0 CHECK (count >= 0),
@@ -129,4 +96,3 @@ CREATE TABLE IF NOT EXISTS live_audio_chunks (
   created_at timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (session_id, chunk_index)
 );
-

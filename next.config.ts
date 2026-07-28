@@ -5,8 +5,6 @@ const nextConfig: NextConfig = {
     const isDev = process.env.NODE_ENV !== "production";
     const connectSources = [
       "'self'",
-      "https://api.stripe.com",
-      "https://checkout.stripe.com",
       "https://vercel.com",
       "https://blob.vercel-storage.com",
       "https://*.blob.vercel-storage.com",
@@ -18,14 +16,13 @@ const nextConfig: NextConfig = {
       "default-src 'self'",
       "base-uri 'self'",
       "frame-ancestors 'none'",
-      "form-action 'self' https://checkout.stripe.com",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
+      "form-action 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
       "media-src 'self' blob: https:",
       `connect-src ${connectSources}`,
-      "frame-src https://checkout.stripe.com https://js.stripe.com",
       "object-src 'none'",
       ...(isDev ? [] : ["upgrade-insecure-requests"]),
     ].join("; ");
@@ -40,7 +37,7 @@ const nextConfig: NextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(self), geolocation=(), payment=(self)",
+            value: "camera=(), microphone=(self), geolocation=()",
           },
           ...(isDev
             ? []

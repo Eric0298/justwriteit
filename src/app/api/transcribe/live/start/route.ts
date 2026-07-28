@@ -1,6 +1,5 @@
 import { auth } from "@/../auth";
-import { normalizePlan } from "@/lib/billing/plans";
-import { releaseDailyTranscriptionUsage, reserveDailyTranscriptionUsage } from "@/lib/queries/billing";
+import { releaseDailyTranscriptionUsage, reserveDailyTranscriptionUsage } from "@/lib/queries/usage";
 import { createLiveSession, updateLiveSessionStatus, type LiveSessionRow } from "@/lib/queries/live";
 import { createTranscription } from "@/lib/queries/transcriptions";
 import { getClientIp } from "@/lib/security/ip";
@@ -46,7 +45,6 @@ export async function POST(req: Request) {
     );
   }
 
-  const plan = normalizePlan(reservation.status.plan);
   const mimeType = parsed.data.mimeType ?? "audio/webm";
   let live: LiveSessionRow | null = null;
 
@@ -64,8 +62,6 @@ export async function POST(req: Request) {
       language: parsed.data.language,
       status: "processing",
       audioFilename: null,
-      isFreeUsage: plan === "FREE",
-      plan,
     });
 
     return Response.json({

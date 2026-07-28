@@ -1,6 +1,6 @@
 import { auth } from "@/../auth";
 import { PublicApiError, toPublicError } from "@/lib/api/errors";
-import { getUsageStatus, releaseDailyTranscriptionUsage } from "@/lib/queries/billing";
+import { getUsageStatus, releaseDailyTranscriptionUsage } from "@/lib/queries/usage";
 import {
   deleteLiveChunks,
   getLiveSession,
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
     const usage = await getUsageStatus(session.user.id);
     if (merged.byteLength > usage.maxAudioFileSizeBytes) {
       throw new PublicApiError(
-        `Audio demasiado grande para tu plan (max ${usage.maxAudioFileSizeMb}MB).`,
+        `Audio demasiado grande (max ${usage.maxAudioFileSizeMb}MB).`,
         413
       );
     }

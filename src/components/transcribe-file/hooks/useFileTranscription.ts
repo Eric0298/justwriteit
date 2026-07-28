@@ -18,7 +18,6 @@ function pickErrorMessage(data: unknown, fallback: string) {
 function isUsageStatus(v: unknown): v is UsageStatus {
   return (
     isObject(v) &&
-    typeof v.plan === "string" &&
     typeof v.remainingToday === "number" &&
     typeof v.dailyLimit === "number" &&
     typeof v.maxAudioFileSizeBytes === "number" &&
@@ -96,7 +95,7 @@ export function useFileTranscription() {
     if (usage && file.size > usage.maxAudioFileSizeBytes) {
       push({
         title: "Archivo demasiado grande",
-        message: `Tu plan permite audios de hasta ${usage.maxAudioFileSizeMb}MB.`,
+        message: `El limite por archivo es de ${usage.maxAudioFileSizeMb}MB.`,
         variant: "danger",
       });
       return;

@@ -19,7 +19,6 @@ function isObject(value: unknown): value is Record<string, unknown> {
 function isUsageStatus(v: unknown): v is UsageStatus {
   return (
     isObject(v) &&
-    typeof v.plan === "string" &&
     typeof v.remainingToday === "number" &&
     typeof v.dailyLimit === "number" &&
     typeof v.maxAudioFileSizeBytes === "number" &&

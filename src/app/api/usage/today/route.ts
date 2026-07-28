@@ -1,5 +1,5 @@
 import { auth } from "@/../auth";
-import { getUsageStatus } from "@/lib/queries/billing";
+import { getUsageStatus } from "@/lib/queries/usage";
 
 export const runtime = "nodejs";
 

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/../auth";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import type { PutBlobResult } from "@vercel/blob";
-import { getUsageStatus } from "@/lib/queries/billing";
+import { getUsageStatus } from "@/lib/queries/usage";
 import { getClientIp } from "@/lib/security/ip";
 import { rateLimit } from "@/lib/security/rateLimit";
 

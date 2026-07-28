@@ -1,7 +1,6 @@
 import { auth } from "@/../auth";
 import { PublicApiError, toPublicError } from "@/lib/api/errors";
-import { normalizePlan } from "@/lib/billing/plans";
-import { getUsageStatus, releaseDailyTranscriptionUsage, reserveDailyTranscriptionUsage } from "@/lib/queries/billing";
+import { getUsageStatus, releaseDailyTranscriptionUsage, reserveDailyTranscriptionUsage } from "@/lib/queries/usage";
 import {
   createTranscription,
   setNotificationStatus,
@@ -138,7 +137,6 @@ export async function POST(req: Request) {
 
     usageReserved = true;
     const usage = reservation.status;
-    const plan = normalizePlan(usage.plan);
 
     row = await createTranscription({
       userId: session.user.id,
@@ -146,8 +144,6 @@ export async function POST(req: Request) {
       language: parsed.data.language,
       status: "processing",
       audioFilename: body.filename,
-      isFreeUsage: plan === "FREE",
-      plan,
     });
 
     const fileRes = await fetch(safeFileUrl, { cache: "no-store" });

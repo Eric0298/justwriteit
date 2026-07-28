@@ -1,7 +1,5 @@
 export type UsageStatus = {
   userId: string;
-  plan: string;
-  planLabel: string;
   usedToday: number;
   dailyLimit: number;
   remainingToday: number;
@@ -11,4 +9,3 @@ export type UsageStatus = {
   canTranscribe: boolean;
   message: string;
 };
-

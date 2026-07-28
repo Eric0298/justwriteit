@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { UsageNotice } from "@/components/billing/UsageNotice";
+import { UsageNotice } from "@/components/usage/UsageNotice";
 import type { UsageStatus } from "@/lib/types/usage";
 
 type Props = {
@@ -69,7 +69,7 @@ export function TranscribeFileForm({
             aria-label="Seleccionar archivo de audio"
             disabled={isLoading}
           />
-          <p className="hint">Formatos comunes: mp3, wav, m4a, ogg, webm. Máximo 25MB.</p>
+          <p className="hint">Formatos comunes: mp3, wav, m4a, ogg, webm. Máximo 50MB.</p>
         </div>
 
         <Select

@@ -1,9 +1,7 @@
 import { auth } from "@/../auth";
 import { redirect } from "next/navigation";
-import { User, Mail, Calendar, Shield } from "lucide-react";
+import { User, Mail, Calendar } from "lucide-react";
 import { getUserByEmail } from "@/lib/queries/users";
-import { getBillingProfile } from "@/lib/queries/billing";
-import { PLAN_LIMITS, normalizePlan } from "@/lib/billing/plans";
 import { signOutAction } from "@/app/dashboard/actions";
 
 export default async function SettingsPage() {
@@ -13,8 +11,6 @@ export default async function SettingsPage() {
   const userRow = session.user.email
     ? await getUserByEmail(session.user.email)
     : null;
-  const billing = await getBillingProfile(session.user.id);
-  const plan = normalizePlan(billing?.plan ?? userRow?.plan);
 
   const createdAt = userRow?.created_at
     ? new Date(userRow.created_at).toLocaleDateString("es-ES", {
@@ -83,23 +79,6 @@ export default async function SettingsPage() {
           <div className="min-w-0">
             <p className="text-xs text-muted">Miembro desde</p>
             <p className="text-sm font-medium">{createdAt}</p>
-          </div>
-        </div>
-
-        {/* Plan */}
-        <div className="flex items-center gap-3 px-4 py-3" style={{ borderColor: "rgb(var(--border))" }}>
-          <span
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border"
-            style={{
-              borderColor: "rgba(var(--accent),0.22)",
-              background: "rgba(var(--accent),0.08)",
-            }}
-          >
-            <Shield size={15} aria-hidden="true" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-xs text-muted">Plan</p>
-            <p className="text-sm font-medium">{PLAN_LIMITS[plan].label}</p>
           </div>
         </div>
       </div>

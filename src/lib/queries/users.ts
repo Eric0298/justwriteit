@@ -5,8 +5,6 @@ export type UserRow = {
   name: string;
   email: string;
   password_hash: string;
-  plan: string;
-  stripe_customer_id: string | null;
   created_at: Date;
   updated_at: Date;
   verified_at: Date | null;
@@ -26,7 +24,7 @@ export async function createUser(input: {
     `
     INSERT INTO users (name, email, password_hash)
     VALUES ($1, $2, $3)
-    RETURNING id, name, email, password_hash, plan, stripe_customer_id, created_at, updated_at, verified_at
+    RETURNING id, name, email, password_hash, created_at, updated_at, verified_at
     `,
     [name, email, input.passwordHash]
   );
@@ -42,7 +40,7 @@ export async function createUser(input: {
 export async function getUserByEmail(email: string): Promise<UserRow | null> {
   const res = await query<UserRow>(
     `
-    SELECT id, name, email, password_hash, plan, stripe_customer_id, created_at, updated_at, verified_at
+    SELECT id, name, email, password_hash, created_at, updated_at, verified_at
     FROM users
     WHERE email = $1
     LIMIT 1
@@ -56,7 +54,7 @@ export async function getUserByEmail(email: string): Promise<UserRow | null> {
 export async function getUserById(id: string): Promise<UserRow | null> {
   const res = await query<UserRow>(
     `
-    SELECT id, name, email, password_hash, plan, stripe_customer_id, created_at, updated_at, verified_at
+    SELECT id, name, email, password_hash, created_at, updated_at, verified_at
     FROM users
     WHERE id = $1
     LIMIT 1
@@ -73,7 +71,7 @@ export async function setUserVerified(id: string): Promise<UserRow | null> {
     UPDATE users
     SET verified_at = now()
     WHERE id = $1
-    RETURNING id, name, email, password_hash, plan, stripe_customer_id, created_at, updated_at, verified_at
+    RETURNING id, name, email, password_hash, created_at, updated_at, verified_at
     `,
     [id]
   );

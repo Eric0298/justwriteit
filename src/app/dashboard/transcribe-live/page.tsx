@@ -6,7 +6,7 @@ import { LiveHeader } from "@/components/transcribe-live/LiveHeader";
 import { LiveSettings } from "@/components/transcribe-live/LiveSettings";
 import { LiveControls } from "@/components/transcribe-live/LiveControls";
 import { LiveResult } from "@/components/transcribe-live/LiveResult";
-import { UsageNotice } from "@/components/billing/UsageNotice";
+import { UsageNotice } from "@/components/usage/UsageNotice";
 
 export default function TranscribeLivePage() {
   const live = useLiveTranscription();
