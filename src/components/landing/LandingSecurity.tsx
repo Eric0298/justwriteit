@@ -8,7 +8,7 @@ export default function LandingSecurity() {
     >
       <h2 className="text-xl font-semibold tracking-tight">Privacidad y control</h2>
       <p className="mt-2 text-sm text-muted max-w-[80ch]">
-        Cuentas, historial y acceso seguro. Diseñado para uso real. (Ajusta este texto según tu política real).
+        Cuentas, historial y acceso protegido para que puedas gestionar tus transcripciones desde un mismo lugar.
       </p>
 
       <div className="mt-4 grid gap-3 md:grid-cols-3">

@@ -28,7 +28,7 @@ Configurables en [src/lib/usage/limits.ts](src/lib/usage/limits.ts).
 Requisitos: Node 20+ y PostgreSQL 15+ corriendo en local.
 
 ```bash
-git clone https://github.com/<tu-usuario>/justwriteit.git
+git clone https://github.com/Eric0298/justwriteit.git
 cd justwriteit
 npm install
 cp .env.example .env.local
@@ -44,7 +44,7 @@ psql "$DATABASE_URL" -f src/db/schema.sql
 Levanta el servicio Whisper (en otro terminal). El repo con el servicio:
 
 ```
-https://github.com/<tu-usuario>/whisper-service
+https://github.com/Eric0298/whisper-service
 ```
 
 O directamente con Docker Compose desde este repo:
