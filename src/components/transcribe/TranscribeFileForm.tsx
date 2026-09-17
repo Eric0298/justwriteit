@@ -70,7 +70,7 @@ export function TranscribeFileForm({
             disabled={isLoading}
           />
           <p className="hint">
-            Formatos comunes: mp3, wav, m4a, ogg, webm. Máximo {usage?.maxAudioFileSizeMb ?? 10}MB y 10 minutos.
+            Formatos comunes: mp3, wav, m4a, ogg, webm. Máximo {usage?.maxAudioFileSizeMb ?? 10}MB y 3 minutos.
           </p>
         </div>
 

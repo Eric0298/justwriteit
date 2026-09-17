@@ -273,7 +273,7 @@ export function useLiveTranscription() {
 
     push({
       title: "Transcribiendo…",
-      message: "Si el servicio estaba en reposo puede tardar hasta 1 minuto.",
+      message: "Puede tardar hasta 3 minutos, sobre todo si el servicio estaba en reposo.",
       durationMs: 60_000,
     });
 

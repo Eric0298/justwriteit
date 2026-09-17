@@ -19,7 +19,7 @@ Cada usuario tiene:
 
 - 10 transcripciones al día.
 - Archivos de audio de hasta 10 MB.
-- Sesiones de grabación en vivo de hasta 10 minutos.
+- Sesiones de grabación en vivo de hasta 3 minutos.
 
 Configurables en [src/lib/usage/limits.ts](src/lib/usage/limits.ts).
 
