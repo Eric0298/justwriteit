@@ -20,6 +20,7 @@ import {
   WhisperPayloadTooLargeError,
 } from "@/lib/transcription/providers/whisper-http";
 import {
+  LIVE_FINISH_MAX_AGE_SECONDS,
   MAX_AUDIO_DURATION_MINUTES,
   MAX_AUDIO_FILE_SIZE_MB,
 } from "@/lib/usage/limits";
@@ -31,8 +32,6 @@ export const maxDuration = 300;
 const MAX_ROUTE_MS = maxDuration * 1000;
 const ROUTE_SAFETY_MARGIN_MS = 15_000;
 const MIN_POST_BUDGET_MS = 30_000;
-
-const MAX_LIVE_MINUTES = MAX_AUDIO_DURATION_MINUTES;
 
 const COLD_START_MESSAGE =
   "Despertando el servicio de transcripción, la primera petición puede tardar ~1 minuto. Vuelve a intentarlo en unos segundos.";
@@ -93,9 +92,9 @@ export async function POST(req: Request) {
 
     const startedAt = new Date(live.created_at);
     const ageMs = Date.now() - startedAt.getTime();
-    if (ageMs > MAX_LIVE_MINUTES * 60 * 1000) {
+    if (ageMs > LIVE_FINISH_MAX_AGE_SECONDS * 1000) {
       throw new PublicApiError(
-        `La sesion supera el limite de ${MAX_LIVE_MINUTES} minutos.`,
+        `La sesion supera el limite de ${MAX_AUDIO_DURATION_MINUTES} minutos.`,
         413,
       );
     }

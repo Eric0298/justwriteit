@@ -4,9 +4,17 @@ import * as React from "react";
 import { useToast } from "@/components/ui/Toast";
 import type { UsageStatus } from "@/lib/types/usage";
 import {
+  LIVE_AUTO_STOP_SECONDS,
   MAX_AUDIO_DURATION_MINUTES,
-  MAX_AUDIO_DURATION_SECONDS,
 } from "@/lib/usage/limits";
+
+function formatMinSec(totalSec: number): string {
+  const mins = Math.floor(totalSec / 60);
+  const rem = totalSec % 60;
+  if (mins === 0) return `${rem} s`;
+  if (rem === 0) return `${mins} min`;
+  return `${mins} min ${rem} s`;
+}
 
 export type Status = "idle" | "recording" | "paused" | "stopping" | "done";
 
@@ -100,12 +108,12 @@ export function useLiveTranscription() {
 
   React.useEffect(() => {
     if (status !== "recording") return;
-    if (seconds < MAX_AUDIO_DURATION_SECONDS) return;
+    if (seconds < LIVE_AUTO_STOP_SECONDS) return;
     if (autoStoppedRef.current) return;
     autoStoppedRef.current = true;
     push({
       title: "Límite de grabación alcanzado",
-      message: `Se detiene automáticamente a los ${MAX_AUDIO_DURATION_MINUTES} minutos.`,
+      message: `Se detiene automáticamente a los ${formatMinSec(LIVE_AUTO_STOP_SECONDS)} para no superar el límite de ${MAX_AUDIO_DURATION_MINUTES} min del servicio.`,
       variant: "danger",
     });
     void stopRef.current();
