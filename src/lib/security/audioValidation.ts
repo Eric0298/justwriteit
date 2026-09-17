@@ -8,14 +8,25 @@ export const ALLOWED_AUDIO_MIME_TYPES = new Set([
   "audio/wav",
   "audio/x-wav",
   "audio/webm",
+  // file-type detecta los .webm audio-only de MediaRecorder como video/webm
+  // porque no siempre encuentra el TrackType en el prefijo EBML.
+  "video/webm",
   "audio/ogg",
   "audio/mp4",
   "audio/x-m4a",
   "audio/aac",
 ]);
 
+const MIME_ALIASES: Record<string, string> = {
+  "video/webm": "audio/webm",
+};
+
+function normalizeMime(raw: string): string {
+  return raw.split(";")[0].trim().toLowerCase();
+}
+
 export function isAllowedAudioMime(mime: string): boolean {
-  return ALLOWED_AUDIO_MIME_TYPES.has(mime);
+  return ALLOWED_AUDIO_MIME_TYPES.has(normalizeMime(mime));
 }
 
 export async function validateAudio(input: {
@@ -35,12 +46,12 @@ export async function validateAudio(input: {
 
   // MIME real por firma, mas fiable que file.type.
   const ft = await fileTypeFromBuffer(input.buffer);
-  const mime = ft?.mime ?? "application/octet-stream";
+  const detected = normalizeMime(ft?.mime ?? "application/octet-stream");
 
-  if (!isAllowedAudioMime(mime)) {
-    throw new Error(`Tipo no permitido (detectado): ${mime}`);
+  if (!ALLOWED_AUDIO_MIME_TYPES.has(detected)) {
+    throw new Error(`Tipo no permitido (detectado): ${detected}`);
   }
 
-  return { mime };
+  return { mime: MIME_ALIASES[detected] ?? detected };
 }
 
