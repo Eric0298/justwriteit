@@ -6,6 +6,10 @@ import { useToast } from "@/components/ui/Toast";
 import type { Phase } from "@/components/transcribe/TranscriptionProgress";
 import type { Transcription } from "@/lib/types/transcriptions";
 import type { UsageStatus } from "@/lib/types/usage";
+import {
+  MAX_AUDIO_DURATION_MINUTES,
+  MAX_AUDIO_DURATION_SECONDS,
+} from "@/lib/usage/limits";
 
 function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null;
@@ -13,6 +17,31 @@ function isObject(v: unknown): v is Record<string, unknown> {
 
 function pickErrorMessage(data: unknown, fallback: string) {
   return isObject(data) && typeof data.error === "string" ? data.error : fallback;
+}
+
+function pickErrorCode(data: unknown): string | null {
+  return isObject(data) && typeof data.code === "string" ? data.code : null;
+}
+
+async function readAudioDurationSec(file: File): Promise<number | null> {
+  if (typeof window === "undefined") return null;
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const audio = document.createElement("audio");
+    let done = false;
+    const finish = (val: number | null) => {
+      if (done) return;
+      done = true;
+      URL.revokeObjectURL(url);
+      resolve(val);
+    };
+    audio.preload = "metadata";
+    audio.onloadedmetadata = () => finish(audio.duration);
+    audio.onerror = () => finish(null);
+    // Algunos webm no disparan loadedmetadata; corta a los 5 s y deja decidir al servidor.
+    window.setTimeout(() => finish(null), 5_000);
+    audio.src = url;
+  });
 }
 
 function isUsageStatus(v: unknown): v is UsageStatus {
@@ -101,6 +130,16 @@ export function useFileTranscription() {
       return;
     }
 
+    const durationSec = await readAudioDurationSec(file);
+    if (durationSec !== null && Number.isFinite(durationSec) && durationSec > MAX_AUDIO_DURATION_SECONDS) {
+      push({
+        title: "Audio demasiado largo",
+        message: `La duración máxima es de ${MAX_AUDIO_DURATION_MINUTES} minutos.`,
+        variant: "danger",
+      });
+      return;
+    }
+
     setIsLoading(true);
     setResult(null);
     setSegmentsRaw(null);
@@ -121,6 +160,12 @@ export function useFileTranscription() {
 
       setProgress(30);
       setPhase("transcribing");
+
+      push({
+        title: "Transcribiendo…",
+        message: "Si el servicio estaba en reposo puede tardar hasta 1 minuto.",
+        durationMs: 60_000,
+      });
 
       const res = await fetch("/api/transcribe/file", {
         method: "POST",
@@ -145,8 +190,15 @@ export function useFileTranscription() {
 
       if (!res.ok) {
         setPhase("error");
+        const code = pickErrorCode(data);
+        const title =
+          code === "whisper_cold_start"
+            ? "Servicio arrancando"
+            : code === "whisper_too_large"
+              ? "Audio no admitido"
+              : "Error";
         push({
-          title: "Error",
+          title,
           message: pickErrorMessage(data, "No se pudo transcribir."),
           variant: "danger",
         });

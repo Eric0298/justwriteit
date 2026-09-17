@@ -69,7 +69,9 @@ export function TranscribeFileForm({
             aria-label="Seleccionar archivo de audio"
             disabled={isLoading}
           />
-          <p className="hint">Formatos comunes: mp3, wav, m4a, ogg, webm. Máximo 50MB.</p>
+          <p className="hint">
+            Formatos comunes: mp3, wav, m4a, ogg, webm. Máximo {usage?.maxAudioFileSizeMb ?? 10}MB y 10 minutos.
+          </p>
         </div>
 
         <Select

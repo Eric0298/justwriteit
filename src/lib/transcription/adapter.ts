@@ -6,6 +6,7 @@ type TranscribeFileInput = {
   mimeType: string;
   language: string;
   context?: string;
+  timeoutMs?: number;
 };
 
 type TranscribeFileOutput = {
@@ -33,6 +34,7 @@ export function getTranscriptionAdapter() {
   });
 
   return {
+    warmUp: () => whisper.warmUp(),
     async transcribeFile(input: TranscribeFileInput): Promise<TranscribeFileOutput> {
       const res = await whisper.transcribeFile(input);
       return {

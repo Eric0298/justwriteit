@@ -18,8 +18,8 @@ Es un proyecto de portfolio: gratis para todos, sin planes ni pagos. Cada cuenta
 Cada usuario tiene:
 
 - 10 transcripciones al día.
-- Archivos de audio de hasta 50 MB.
-- Sesiones de grabación en vivo de hasta 30 minutos.
+- Archivos de audio de hasta 10 MB.
+- Sesiones de grabación en vivo de hasta 10 minutos.
 
 Configurables en [src/lib/usage/limits.ts](src/lib/usage/limits.ts).
 

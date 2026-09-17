@@ -3,6 +3,10 @@
 import * as React from "react";
 import { useToast } from "@/components/ui/Toast";
 import type { UsageStatus } from "@/lib/types/usage";
+import {
+  MAX_AUDIO_DURATION_MINUTES,
+  MAX_AUDIO_DURATION_SECONDS,
+} from "@/lib/usage/limits";
 
 export type Status = "idle" | "recording" | "paused" | "stopping" | "done";
 
@@ -73,6 +77,8 @@ export function useLiveTranscription() {
 
   const sessionIdRef = React.useRef<string | null>(null);
   const transcriptionIdRef = React.useRef<string | null>(null);
+  const stopRef = React.useRef<() => Promise<void>>(() => Promise.resolve());
+  const autoStoppedRef = React.useRef(false);
 
   const refreshUsage = React.useCallback(async () => {
     const res = await fetch("/api/usage/today", { cache: "no-store" });
@@ -92,6 +98,19 @@ export function useLiveTranscription() {
     return () => window.clearInterval(t);
   }, [status]);
 
+  React.useEffect(() => {
+    if (status !== "recording") return;
+    if (seconds < MAX_AUDIO_DURATION_SECONDS) return;
+    if (autoStoppedRef.current) return;
+    autoStoppedRef.current = true;
+    push({
+      title: "Límite de grabación alcanzado",
+      message: `Se detiene automáticamente a los ${MAX_AUDIO_DURATION_MINUTES} minutos.`,
+      variant: "danger",
+    });
+    void stopRef.current();
+  }, [seconds, status, push]);
+
   function reset() {
     setStatus("idle");
     setSeconds(0);
@@ -101,6 +120,7 @@ export function useLiveTranscription() {
     transcriptionIdRef.current = null;
     recorderRef.current = null;
     streamRef.current = null;
+    autoStoppedRef.current = false;
     void refreshUsage();
   }
 
@@ -154,7 +174,10 @@ export function useLiveTranscription() {
       sessionIdRef.current = startData.sessionId;
       transcriptionIdRef.current = startData.transcriptionId;
 
-      const rec = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      const rec = new MediaRecorder(stream, {
+        ...(mimeType ? { mimeType } : {}),
+        audioBitsPerSecond: 64_000,
+      });
       recorderRef.current = rec;
 
       rec.ondataavailable = async (ev: BlobEvent) => {
@@ -248,6 +271,12 @@ export function useLiveTranscription() {
     await stopped;
     await new Promise((r) => setTimeout(r, 300));
 
+    push({
+      title: "Transcribiendo…",
+      message: "Si el servicio estaba en reposo puede tardar hasta 1 minuto.",
+      durationMs: 60_000,
+    });
+
     const resFinish = await fetch("/api/transcribe/live/finish", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -261,7 +290,15 @@ export function useLiveTranscription() {
 
     if (!resFinish.ok) {
       const msg = isLiveFinishErr(finishData) ? finishData.error : "No se pudo finalizar.";
-      push({ title: "Error", message: msg, variant: "danger" });
+      const code =
+        isObject(finishData) && typeof finishData.code === "string" ? finishData.code : null;
+      const title =
+        code === "whisper_cold_start"
+          ? "Servicio arrancando"
+          : code === "whisper_too_large"
+            ? "Audio no admitido"
+            : "Error";
+      push({ title, message: msg, variant: "danger" });
       setStatus("idle");
       return;
     }
@@ -278,6 +315,8 @@ export function useLiveTranscription() {
 
     push({ title: "Transcripcion lista", message: "Guardada en tu historial.", variant: "success" });
   }
+
+  stopRef.current = stop;
 
   const canFinish = status === "recording" || status === "paused";
   const canEditSettings = status === "idle";

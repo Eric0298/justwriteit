@@ -14,11 +14,26 @@ import { rateLimit } from "@/lib/security/rateLimit";
 import { assertAllowedRemoteAudioUrl } from "@/lib/security/remoteAudio";
 import { validateAudio } from "@/lib/security/audioValidation";
 import { getTranscriptionAdapter } from "@/lib/transcription/adapter";
+import {
+  WhisperColdStartError,
+  WhisperPayloadTooLargeError,
+} from "@/lib/transcription/providers/whisper-http";
+import {
+  MAX_AUDIO_DURATION_MINUTES,
+  MAX_AUDIO_FILE_SIZE_MB,
+} from "@/lib/usage/limits";
 import { transcribeFileSchema } from "@/lib/validators/transcribe";
 import { notifyTranscriptionCompleted } from "@/lib/mailer";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 300;
+
+const MAX_ROUTE_MS = maxDuration * 1000;
+const ROUTE_SAFETY_MARGIN_MS = 15_000;
+const MIN_POST_BUDGET_MS = 30_000;
+
+const COLD_START_MESSAGE =
+  "Despertando el servicio de transcripción, la primera petición puede tardar ~1 minuto. Vuelve a intentarlo en unos segundos.";
 
 type Body = {
   fileUrl: string;
@@ -85,6 +100,8 @@ async function notifyUser(input: {
 }
 
 export async function POST(req: Request) {
+  const routeStartMs = Date.now();
+
   const session = await auth();
   if (!session?.user?.id) {
     return Response.json({ ok: false, error: "No autenticado." }, { status: 401 });
@@ -185,13 +202,45 @@ export async function POST(req: Request) {
     }
 
     const adapter = getTranscriptionAdapter();
-    const out = await adapter.transcribeFile({
-      fileBuffer: buffer,
-      filename: body.filename,
-      mimeType: detectedMime,
-      language: parsed.data.language,
-      context: parsed.data.context || undefined,
-    });
+
+    try {
+      await adapter.warmUp();
+    } catch (err) {
+      if (err instanceof WhisperColdStartError) {
+        throw new PublicApiError(COLD_START_MESSAGE, 503, "whisper_cold_start");
+      }
+      throw err;
+    }
+
+    const remainingBudgetMs =
+      MAX_ROUTE_MS - (Date.now() - routeStartMs) - ROUTE_SAFETY_MARGIN_MS;
+    if (remainingBudgetMs < MIN_POST_BUDGET_MS) {
+      throw new PublicApiError(COLD_START_MESSAGE, 503, "whisper_cold_start");
+    }
+
+    let out;
+    try {
+      out = await adapter.transcribeFile({
+        fileBuffer: buffer,
+        filename: body.filename,
+        mimeType: detectedMime,
+        language: parsed.data.language,
+        context: parsed.data.context || undefined,
+        timeoutMs: remainingBudgetMs,
+      });
+    } catch (err) {
+      if (err instanceof WhisperPayloadTooLargeError) {
+        throw new PublicApiError(
+          `Audio demasiado grande o largo (máximo ${MAX_AUDIO_FILE_SIZE_MB} MB y ${MAX_AUDIO_DURATION_MINUTES} minutos): ${err.message}`,
+          413,
+          "whisper_too_large",
+        );
+      }
+      if (err instanceof WhisperColdStartError) {
+        throw new PublicApiError(COLD_START_MESSAGE, 503, "whisper_cold_start");
+      }
+      throw err;
+    }
 
     const segs = out.segments ?? [];
     const segmentsJson = segs.length > 0 ? JSON.stringify(segs) : null;
@@ -237,7 +286,7 @@ export async function POST(req: Request) {
     const publicError = toPublicError(error, "Error procesando transcripcion.");
 
     return Response.json(
-      { ok: false, error: publicError.message, usage },
+      { ok: false, error: publicError.message, code: publicError.code, usage },
       { status: publicError.status }
     );
   }
